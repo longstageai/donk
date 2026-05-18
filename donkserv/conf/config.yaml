@@ -1,0 +1,46 @@
+server:
+  host: 0.0.0.0
+  port: 8080
+
+auth:
+  enabled: true
+  api_keys:
+    - sk-your-secret-key
+
+llm:
+  provider: doubao
+  model: doubao-seed-1-8-251228
+  api_key: fd123123131-31231313
+
+embedding:
+  provider: doubao
+  model: ep-20260325174412-vz86z
+  api_key: fd123123131-31231313
+
+agent:
+  name: main
+  max_loop: 10
+  converge_after: 3
+  timeout: 600
+  history_max_entries: 10
+  history_max_days: 7
+  daily_token_limit: 2000000
+
+
+# 全局变量 (使用 variables 节)
+variables:
+  env_name: development
+  db_pool_size_v: 10
+  cache_ttl: 3600
+
+# 知识库配置
+knowledge:
+  enabled: true              # 是否启用知识库功能
+  interval: 3600             # 扫描间隔（秒），默认每小时
+  batch_size: 50             # 每批处理文件数
+  sleep_ms: 100              # 处理间隔（毫秒），控制CPU占用
+  max_depth: 3               # 最大扫描深度
+  max_file_size: 10485760    # 最大文件大小（10MB）
+  hot_days: 7                # 热数据天数
+  warm_days: 30              # 温数据天数
+  directories: []            # 扫描目录（空则使用默认：桌面、下载、文档）
