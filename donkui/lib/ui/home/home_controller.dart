@@ -59,6 +59,9 @@ class HomeController extends GetxController {
   /// 是否禁用首页输入
   bool get isInputDisabled => isWeChatConnected;
 
+  /// Token 刷新触发器流
+  RxInt get tokenRefreshTrigger => _tokenRefreshTrigger;
+
   // ==================== 流式消息处理状态 ====================
   String? _currentAgentMessageId;
   final StringBuffer _currentAgentContent = StringBuffer();
@@ -66,11 +69,13 @@ class HomeController extends GetxController {
   bool _isProcessingAgentResponse = false;
 
   // ==================== 微信消息处理状态 ====================
-  String? _currentWeChatReplyToUserId;
   String? _currentProcessingWeChatMsgId;
 
   /// 正在输入状态定时器
   Timer? _typingTimer;
+
+  /// Token 刷新触发器 - 当 Agent 回复完成时触发
+  final RxInt _tokenRefreshTrigger = 0.obs;
 
   // ==================== 生命周期 ====================
   @override
@@ -135,6 +140,10 @@ class HomeController extends GetxController {
       content: content,
     );
     chatMessages.add(message);
+
+    // 输入框发送消息时，保持当前用户ID不变（如果已设置）
+    // 这样Agent回复会发送给最近交互的微信用户
+
     await sendMessage(content);
   }
 
@@ -183,9 +192,10 @@ class HomeController extends GetxController {
   void cancelRequest() {
     _disconnectSSE();
     // 停止正在输入状态
-    if (_currentWeChatReplyToUserId != null) {
+    final userId = _wechatService.currentUserId;
+    if (userId != null) {
       _stopTypingTimer();
-      _wechatService.stopTyping(_currentWeChatReplyToUserId!);
+      _wechatService.stopTyping(userId);
     }
     _finishCurrentMessage();
     errorMessage.value = '请求已取消';
@@ -235,12 +245,6 @@ class HomeController extends GetxController {
       return;
     }
 
-    // 检查是否正在处理其他微信用户的消息
-    if (_currentWeChatReplyToUserId != null &&
-        _currentWeChatReplyToUserId != message.fromUserId) {
-      return;
-    }
-
     // 检查 SSE 是否正在处理中
     if (isProcessing) {
       return;
@@ -248,7 +252,6 @@ class HomeController extends GetxController {
 
     // 记录当前处理的微信消息
     _currentProcessingWeChatMsgId = message.id;
-    _currentWeChatReplyToUserId = message.fromUserId;
 
     // 将微信消息添加到聊天栏
     final userMessage = ChatMessage.user(
@@ -282,7 +285,8 @@ class HomeController extends GetxController {
 
     // 每3秒发送一次，保持正在输入状态
     _typingTimer = Timer.periodic(const Duration(seconds: 3), (_) {
-      if (_currentWeChatReplyToUserId == userId) {
+      // 检查当前用户是否仍然是同一个
+      if (_wechatService.currentUserId != null) {
         _wechatService.sendTyping(userId);
       }
     });
@@ -423,11 +427,32 @@ class HomeController extends GetxController {
         isError: true,
       ),
     );
-    if (_currentWeChatReplyToUserId != null) {
+
+    // 发送错误信息给微信
+    _sendErrorToWeChat(error);
+
+    final userId = _wechatService.currentUserId;
+    if (userId != null) {
       _stopTypingTimer();
-      _wechatService.stopTyping(_currentWeChatReplyToUserId!);
-      _currentWeChatReplyToUserId = null;
+      _wechatService.stopTyping(userId);
       _currentProcessingWeChatMsgId = null;
+    }
+  }
+
+  /// 发送错误信息到微信
+  Future<void> _sendErrorToWeChat(String error) async {
+    final userId = _wechatService.currentUserId;
+    if (userId == null || !_wechatService.isConnected) {
+      return;
+    }
+
+    try {
+      await _wechatService.sendMessage(
+        userId,
+        '抱歉，处理过程中出现错误：$error',
+      );
+    } catch (e) {
+      // 发送失败静默处理
     }
   }
 
@@ -461,8 +486,9 @@ class HomeController extends GetxController {
     await _sendReplyToWeChat();
 
     // 停止输入状态
-    if (_currentWeChatReplyToUserId != null) {
-      await _wechatService.stopTyping(_currentWeChatReplyToUserId!);
+    final userId = _wechatService.currentUserId;
+    if (userId != null) {
+      await _wechatService.stopTyping(userId);
     }
 
     // 清理状态
@@ -470,15 +496,19 @@ class HomeController extends GetxController {
     _currentAgentContent.clear();
     _currentAgentReasoning.clear();
     _isProcessingAgentResponse = false;
-    _currentWeChatReplyToUserId = null;
     _currentProcessingWeChatMsgId = null;
 
     // 保存历史
     await _saveChatHistoryImmediately();
+
+    // 触发 Token 刷新
+    _tokenRefreshTrigger.value++;
   }
 
   Future<void> _sendReplyToWeChat() async {
-    if (_currentWeChatReplyToUserId == null ||
+    // 从 WeChatBotService 获取当前用户ID（bot自己的ID，即聊天对象）
+    final userId = _wechatService.currentUserId;
+    if (userId == null ||
         _currentAgentContent.isEmpty ||
         !_wechatService.isConnected) {
       return;
@@ -488,7 +518,7 @@ class HomeController extends GetxController {
 
     try {
       await _wechatService.sendMessage(
-        _currentWeChatReplyToUserId!,
+        userId,
         replyContent,
       );
     } catch (e) {

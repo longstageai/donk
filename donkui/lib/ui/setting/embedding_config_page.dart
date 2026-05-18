@@ -43,8 +43,8 @@ class _EmbeddingConfigPageState extends State<EmbeddingConfigPage> {
     },
     'doubao': {
       'label': '豆包',
-      'defaultBaseUrl': 'https://ark.cn-beijing.volces.com/api/v3/embeddings',
-      'defaultModel': 'doubao-embedding-vision-250328',
+      'defaultBaseUrl': 'https://ark.cn-beijing.volces.com/api/v3/embeddings/multimodal',
+      'defaultModel': 'doubao-embedding-vision-251215',
       'defaultDimension': '2048',
     },
   };

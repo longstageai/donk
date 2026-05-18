@@ -56,11 +56,6 @@ class _HomeBottomState extends State<HomeBottom> {
 
   /// 发送消息
   Future<void> _sendMessage() async {
-    // 检查微信是否已连接，如果已连接则禁止发送
-    if (controller.isWeChatConnected) {
-      return;
-    }
-
     final text = _textController.text.trim();
     if (text.isEmpty) return;
 
@@ -214,75 +209,44 @@ class _HomeBottomState extends State<HomeBottom> {
   }
 
   Widget bottom(BuildContext context) {
-    return Obx(() {
-      final isWeChatConnected = controller.isWeChatConnected;
-
-      return Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          color: ColorUtil.fromHex("#f3f4f5"),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(5),
-            topRight: Radius.circular(5),
-          ),
-          border: Border.all(
-            color:
-                _focusNode.hasFocus
-                    ? ColorUtil.fromHex("#b7c2d3")
-                    : Colors.transparent,
-            width: 1,
-          ),
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: BoxDecoration(
+        color: ColorUtil.fromHex("#f3f4f5"),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(5),
+          topRight: Radius.circular(5),
         ),
-        child: Column(
-          children: [
-            // 微信已连接提示
-            if (isWeChatConnected)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                color: ColorUtil.fromHex("#0fdc78").withValues(alpha: 0.1),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.check_circle,
-                      color: ColorUtil.fromHex("#0fdc78"),
-                      size: 16,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '微信已连接，正在处理微信消息',
-                      style: TextStyle(
-                        color: ColorUtil.fromHex("#0fdc78"),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            Expanded(
-              child: _CustomTextField(
-                focusNode: _focusNode,
-                controller: _textController,
-                onSubmitted: () => _sendMessage(),
-                enabled: !isWeChatConnected,
-                hintText: isWeChatConnected ? '微信已连接，请在微信中发送消息' : '输入消息...',
-              ),
-            ),
-            SizedBox(
-              height: 40,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [bottomLeft(), bottomRight()],
-              ),
-            ),
-          ],
+        border: Border.all(
+          color:
+              _focusNode.hasFocus
+                  ? ColorUtil.fromHex("#b7c2d3")
+                  : Colors.transparent,
+          width: 1,
         ),
-      );
-    });
+      ),
+      child: Column(
+        children: [
+          Expanded(
+            child: _CustomTextField(
+              focusNode: _focusNode,
+              controller: _textController,
+              onSubmitted: () => _sendMessage(),
+              enabled: true,
+              hintText: '输入消息...',
+            ),
+          ),
+          SizedBox(
+            height: 40,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [bottomLeft(), bottomRight()],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

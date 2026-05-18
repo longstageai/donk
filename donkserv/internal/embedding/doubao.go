@@ -127,6 +127,7 @@ func (e *DoubaoEmbedder) GetEmbeddings(ctx context.Context, texts []string) ([][
 		return nil, fmt.Errorf("没有有效的输入文本（文本为空或过长）")
 	}
 
+	// 多模态 Embedding API 格式: [{"type": "text", "text": "..."}]
 	input := make([]map[string]interface{}, len(processedTexts))
 	for i, text := range processedTexts {
 		input[i] = map[string]interface{}{

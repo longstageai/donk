@@ -16,8 +16,30 @@ class AppMenu extends StatefulWidget {
   State<AppMenu> createState() => _AppMenuState();
 }
 
-class _AppMenuState extends State<AppMenu> {
+class _AppMenuState extends State<AppMenu> with SingleTickerProviderStateMixin {
   int selectedIndex = 0;
+  late AnimationController _rotationController;
+  late Animation<double> _rotationAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _rotationController = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    );
+    _rotationAnimation = Tween<double>(
+      begin: 0,
+      end: 2 * 3.141592653589793,
+    ).animate(_rotationController);
+    _rotationController.repeat();
+  }
+
+  @override
+  void dispose() {
+    _rotationController.dispose();
+    super.dispose();
+  }
 
   @override
   void didChangeDependencies() {
@@ -56,38 +78,60 @@ class _AppMenuState extends State<AppMenu> {
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: () {},
-        child: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: const Color(0xFFE0E0E0),
-            border: Border.all(color: Colors.white, width: 1),
-          ),
-          child: ClipOval(
-            // child: Image.asset(
-            //   logo,
-            //   fit: BoxFit.cover,
-            //   errorBuilder: (context, error, stackTrace) {
-            //     return const Icon(
-            //       Icons.person,
-            //       color: Color(0xFF666666),
-            //       size: 28,
-            //     );
-            //   },
-            // ),
-            child: Container(
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // 旋转的边框动画
+            AnimatedBuilder(
+              animation: _rotationAnimation,
+              builder: (context, child) {
+                return Transform.rotate(
+                  angle: _rotationAnimation.value,
+                  child: Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const SweepGradient(
+                        colors: [
+                          Colors.blue,
+                          Colors.purple,
+                          Colors.pink,
+                          Colors.orange,
+                          Colors.yellow,
+                          Colors.green,
+                          Colors.blue,
+                        ],
+                        stops: [0.0, 0.15, 0.3, 0.45, 0.6, 0.75, 1.0],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            // 头像主体
+            Container(
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
+                shape: BoxShape.circle,
+                color: const Color(0xFFE0E0E0),
+                border: Border.all(color: Colors.white, width: 2),
               ),
-              child: Center(
-                // child: Icon(Icons.pets, color: Colors.white, size: 24),
-                child: Image.asset(logo, width: 35),
+              child: ClipOval(
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Center(
+                    child: Image.asset(logo, width: 35),
+                  ),
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

@@ -1,18 +1,23 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 import '../model/chat_message.dart';
 
 /// 聊天消息存储服务
 /// 负责消息的本地持久化存储
 class ChatStorageService {
   static const String _fileName = 'chat_history.json';
+  static const String _dataDir = 'data/ui';
 
   /// 获取存储文件路径
-  /// 使用应用支持目录，适合存储应用数据文件
+  /// 使用程序所在目录下的 data/ui 文件夹
   Future<String> get _filePath async {
-    final directory = await getApplicationSupportDirectory();
-    return '${directory.path}/$_fileName';
+    final executableDir = File(Platform.resolvedExecutable).parent.path;
+    final dataDir = Directory(path.join(executableDir, _dataDir));
+    if (!await dataDir.exists()) {
+      await dataDir.create(recursive: true);
+    }
+    return path.join(dataDir.path, _fileName);
   }
 
   /// 保存消息列表到本地

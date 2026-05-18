@@ -1,18 +1,24 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 import '../model/notification_message.dart';
 
 /// 通知消息存储服务
 /// 负责通知消息的本地持久化存储
 class NotificationStorageService {
   static const String _fileName = 'notifications.json';
+  static const String _dataDir = 'data/ui';
   static const int _maxStorageCount = 500; // 最多存储500条消息
 
   /// 获取存储文件路径
+  /// 使用程序所在目录下的 data/ui 文件夹
   Future<String> get _filePath async {
-    final directory = await getApplicationSupportDirectory();
-    return '${directory.path}/$_fileName';
+    final executableDir = File(Platform.resolvedExecutable).parent.path;
+    final dataDir = Directory(path.join(executableDir, _dataDir));
+    if (!await dataDir.exists()) {
+      await dataDir.create(recursive: true);
+    }
+    return path.join(dataDir.path, _fileName);
   }
 
   /// 保存消息列表到本地

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 import '../wechatbot/wechatbot.dart';
 
 /// 微信 Bot 服务
@@ -272,10 +272,18 @@ class WeChatBotService {
     await connect();
   }
 
+  static const String _dataDir = 'data/ui';
+  static const String _credFileName = 'wechat_credentials.json';
+
   /// 获取凭证保存路径
+  /// 使用程序所在目录下的 data/ui 文件夹
   Future<String> _getCredPath() async {
-    final appDir = await getApplicationSupportDirectory();
-    return '${appDir.path}/wechat_credentials.json';
+    final executableDir = File(Platform.resolvedExecutable).parent.path;
+    final dataDir = Directory(path.join(executableDir, _dataDir));
+    if (!await dataDir.exists()) {
+      await dataDir.create(recursive: true);
+    }
+    return path.join(dataDir.path, _credFileName);
   }
 
   /// 释放资源

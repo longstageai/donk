@@ -4,7 +4,6 @@ import 'dart:developer' as developer;
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
-import 'package:path_provider/path_provider.dart';
 import 'types.dart';
 import 'protocol/api.dart';
 import 'auth/login.dart';
@@ -551,16 +550,17 @@ class WeChatBot {
   }
 
   /// 获取 context tokens 存储文件路径
+  /// 使用程序所在目录下的 data/ui 文件夹
   Future<String> _getContextTokensFilePath() async {
     if (_contextTokensFilePath != null) {
       return _contextTokensFilePath!;
     }
-    final directory = await getApplicationDocumentsDirectory();
-    final botDir = Directory('${directory.path}/wechatbot');
-    if (!await botDir.exists()) {
-      await botDir.create(recursive: true);
+    final executableDir = File(Platform.resolvedExecutable).parent.path;
+    final dataDir = Directory('$executableDir/data/ui');
+    if (!await dataDir.exists()) {
+      await dataDir.create(recursive: true);
     }
-    _contextTokensFilePath = '${botDir.path}/context_tokens.json';
+    _contextTokensFilePath = '${dataDir.path}/context_tokens.json';
     return _contextTokensFilePath!;
   }
 

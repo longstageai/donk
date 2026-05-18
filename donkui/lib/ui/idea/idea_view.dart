@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../common/model/skill.dart';
 import '../../common/service/skill_service.dart';
+import 'skill_detail_page.dart';
 
 /// 灵感广场页面
 /// 展示各种AI应用场景和灵感卡片，对接 Skill API 动态加载 Skill 列表
@@ -112,7 +113,8 @@ class _IdeaViewState extends State<IdeaView> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('所有 Skill 已处于启用状态')));
+        ).showSnackBar(
+            const SnackBar(content: Text('所有 Skill 已处于启用状态')));
       }
       return;
     }
@@ -153,7 +155,8 @@ class _IdeaViewState extends State<IdeaView> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('所有 Skill 已处于禁用状态')));
+        ).showSnackBar(
+            const SnackBar(content: Text('所有 Skill 已处于禁用状态')));
       }
       return;
     }
@@ -193,9 +196,11 @@ class _IdeaViewState extends State<IdeaView> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder:
-          (context) => AlertDialog(
+          (context) =>
+          AlertDialog(
             title: const Text('确认删除'),
-            content: Text('确定要删除 Skill "${skill.name}" 吗？\n\n此操作不可恢复！'),
+            content: Text(
+                '确定要删除 Skill "${skill.name}" 吗？\n\n此操作不可恢复！'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
@@ -296,6 +301,7 @@ class _IdeaViewState extends State<IdeaView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+
             /// 页面标题
             _buildHeader(),
             const SizedBox(height: 20),
@@ -325,7 +331,7 @@ class _IdeaViewState extends State<IdeaView> {
           children: [
             IconButton(
               onPressed:
-                  _isLoading || _skills.isEmpty ? null : _enableAllSkills,
+              _isLoading || _skills.isEmpty ? null : _enableAllSkills,
               icon: const Icon(
                 Icons.play_circle_outline,
                 size: 20,
@@ -335,7 +341,7 @@ class _IdeaViewState extends State<IdeaView> {
             ),
             IconButton(
               onPressed:
-                  _isLoading || _skills.isEmpty ? null : _disableAllSkills,
+              _isLoading || _skills.isEmpty ? null : _disableAllSkills,
               icon: const Icon(
                 Icons.pause_circle_outline,
                 size: 18,
@@ -453,120 +459,138 @@ class _IdeaViewState extends State<IdeaView> {
       skill.tags.isNotEmpty ? skill.tags.first : skill.name,
     );
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8F8F8),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFEEEEEE)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          /// 图标和开关
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: iconColor.withAlpha(20),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  _getSkillIcon(skill.name),
-                  size: 20,
-                  color: iconColor,
-                ),
-              ),
-              Row(
-                children: [
-                  /// 启用/禁用开关
-                  /// 开关
-                  Transform.scale(
-                    /// 缩放比例，使开关变小
-                    scale: 0.8,
-                    child: Switch(
-                      value: skill.enabled,
-                      onChanged: (value) => _toggleSkillEnabled(skill),
+    return InkWell(
+      onTap: () => _navigateToSkillDetail(skill),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8F8F8),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFEEEEEE)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
 
-                      /// 激活颜色
-                      activeColor: Colors.white,
-                      activeTrackColor: const Color(0xFF07C160),
-
-                      /// 非激活颜色
-                      inactiveThumbColor: Colors.white,
-                      inactiveTrackColor: Colors.grey.shade300,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          /// 标题
-          Text(
-            skill.name,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 4),
-
-          /// 描述
-          Expanded(
-            child: Text(
-              skill.description,
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          const SizedBox(height: 8),
-
-          /// 标签和版本
-          Row(
-            children: [
-              if (skill.tags.isNotEmpty)
+            /// 图标和开关
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: iconColor.withAlpha(20),
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text(
-                    skill.tags.first,
-                    style: TextStyle(fontSize: 10, color: iconColor),
+                  child: Icon(
+                    _getSkillIcon(skill.name),
+                    size: 20,
+                    color: iconColor,
                   ),
                 ),
-              const Spacer(),
-              Text(
-                'v${skill.version}',
-                style: const TextStyle(fontSize: 10, color: Colors.grey),
-              ),
-              SizedBox(width: 10),
+                Row(
+                  children: [
 
-              /// 删除按钮
-              IconButton(
-                onPressed: () => _deleteSkill(skill),
-                icon: const Icon(Icons.delete_outline, size: 18),
-                color: Colors.red,
-                tooltip: '删除 Skill',
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                    /// 启用/禁用开关
+                    /// 开关
+                    Transform.scale(
+
+                      /// 缩放比例，使开关变小
+                      scale: 0.8,
+                      child: Switch(
+                        value: skill.enabled,
+                        onChanged: (value) => _toggleSkillEnabled(skill),
+
+                        /// 激活颜色
+                        activeColor: Colors.white,
+                        activeTrackColor: const Color(0xFF07C160),
+
+                        /// 非激活颜色
+                        inactiveThumbColor: Colors.white,
+                        inactiveTrackColor: Colors.grey.shade300,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            /// 标题
+            Text(
+              skill.name,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
               ),
-            ],
-          ),
-        ],
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 4),
+
+            /// 描述
+            Expanded(
+              child: Text(
+                skill.description,
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            /// 标签和版本
+            Row(
+              children: [
+                if (skill.tags.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: iconColor.withAlpha(20),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      skill.tags.first,
+                      style: TextStyle(fontSize: 10, color: iconColor),
+                    ),
+                  ),
+                const Spacer(),
+                Text(
+                  'v${skill.version}',
+                  style: const TextStyle(fontSize: 10, color: Colors.grey),
+                ),
+                SizedBox(width: 10),
+
+                /// 删除按钮
+                IconButton(
+                  onPressed: () => _deleteSkill(skill),
+                  icon: const Icon(Icons.delete_outline, size: 18),
+                  color: Colors.red,
+                  tooltip: '删除 Skill',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                      minWidth: 32, minHeight: 32),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 跳转到 Skill 详情页
+  void _navigateToSkillDetail(Skill skill) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SkillDetailPage(skill: skill),
       ),
     );
   }

@@ -32,6 +32,15 @@ class _HomeHeaderState extends State<HomeHeader> {
   void initState() {
     super.initState();
     _loadTokenBudget();
+    _initTokenRefreshListener();
+  }
+
+  /// 初始化 Token 刷新监听器
+  /// 当 Agent 回复完成时自动刷新 Token 预算
+  void _initTokenRefreshListener() {
+    ever(controller.tokenRefreshTrigger, (_) {
+      _loadTokenBudget();
+    });
   }
 
   /// 加载 Token 预算状态

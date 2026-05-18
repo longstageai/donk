@@ -403,7 +403,7 @@ class _ChatMessageItemState extends State<ChatMessageItem> {
           _buildActionButton(Icons.thumb_up_outlined, widget.onLike),
           _buildActionButton(Icons.thumb_down_outlined, widget.onDislike),
           _buildActionButton(Icons.refresh, widget.onRefresh),
-          _buildActionButton(Icons.volume_up_outlined, null),
+          // _buildActionButton(Icons.volume_up_outlined, null),
         ],
       ),
     );
