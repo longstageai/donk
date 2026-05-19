@@ -51,6 +51,7 @@ class _HomeHeaderState extends State<HomeHeader> {
       final limit = data['limit'] as int? ?? -1;
       final usagePercent = (data['usage_percent'] as num?)?.toDouble() ?? 0;
 
+      if (!mounted) return;
       setState(() {
         _usedTokens = used;
         if (limit > 0) {
@@ -61,6 +62,7 @@ class _HomeHeaderState extends State<HomeHeader> {
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
     }
   }

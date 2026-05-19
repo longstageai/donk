@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -33,6 +35,8 @@ class _WeChatConnectDialogState extends State<WeChatConnectDialog> {
   WeChatConnectionStatus _status = WeChatConnectionStatus.disconnected;
   String? _qrCodeUrl;
   String? _errorMessage;
+  StreamSubscription<WeChatConnectionStatus>? _statusSubscription;
+  StreamSubscription<String?>? _qrCodeSubscription;
 
   @override
   void initState() {
@@ -53,34 +57,32 @@ class _WeChatConnectDialogState extends State<WeChatConnectDialog> {
 
   void _initStreams() {
     // 监听状态变化
-    _service.connectionStatus.listen((status) {
-      if (mounted) {
-        // 保存旧状态
-        final oldStatus = _status;
+    _statusSubscription = _service.connectionStatus.listen((status) {
+      if (!mounted) return;
+      // 保存旧状态
+      final oldStatus = _status;
 
-        setState(() {
-          _status = status;
-        });
+      setState(() {
+        _status = status;
+      });
 
-        // 如果断开连接且之前不是断开状态，自动重新获取二维码
-        if (status == WeChatConnectionStatus.disconnected &&
-            oldStatus != WeChatConnectionStatus.disconnected) {
-          _handleDisconnectAndReconnect();
-        }
+      // 如果断开连接且之前不是断开状态，自动重新获取二维码
+      if (status == WeChatConnectionStatus.disconnected &&
+          oldStatus != WeChatConnectionStatus.disconnected) {
+        _handleDisconnectAndReconnect();
       }
     });
 
     // 监听二维码
-    _service.qrCodeStream.listen((url) {
-      if (mounted) {
-        setState(() {
-          _qrCodeUrl = url;
-          // 收到新二维码时清除错误信息
-          if (url != null) {
-            _errorMessage = null;
-          }
-        });
-      }
+    _qrCodeSubscription = _service.qrCodeStream.listen((url) {
+      if (!mounted) return;
+      setState(() {
+        _qrCodeUrl = url;
+        // 收到新二维码时清除错误信息
+        if (url != null) {
+          _errorMessage = null;
+        }
+      });
     });
   }
 
@@ -100,6 +102,7 @@ class _WeChatConnectDialogState extends State<WeChatConnectDialog> {
   Future<void> _checkConnection() async {
     // 检查是否已有连接
     if (_service.isConnected) {
+      if (!mounted) return;
       setState(() {
         _status = WeChatConnectionStatus.connected;
       });
@@ -113,6 +116,7 @@ class _WeChatConnectDialogState extends State<WeChatConnectDialog> {
     try {
       await _service.connect();
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = e.toString();
       });
@@ -131,10 +135,18 @@ class _WeChatConnectDialogState extends State<WeChatConnectDialog> {
     try {
       await _service.forceReconnect();
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = e.toString();
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _statusSubscription?.cancel();
+    _qrCodeSubscription?.cancel();
+    super.dispose();
   }
 
   @override

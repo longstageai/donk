@@ -59,13 +59,16 @@ class _AgentConfigPageState extends State<AgentConfigPage> {
       _dailyTokenLimitController.text =
           (data['daily_token_limit'] ?? -1).toString();
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = '加载配置失败: $e';
       });
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -87,9 +90,11 @@ class _AgentConfigPageState extends State<AgentConfigPage> {
     } catch (e) {
       _showToast('保存失败: $e');
     } finally {
-      setState(() {
-        _isSaving = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
     }
   }
 

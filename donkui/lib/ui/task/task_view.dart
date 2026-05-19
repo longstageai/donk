@@ -33,6 +33,7 @@ class _TaskViewState extends State<TaskView> {
     try {
       final response = await TaskService.getTasks(page: 1, size: 100);
       final items = response['items'] as List<dynamic>? ?? [];
+      if (!mounted) return;
       setState(() {
         _tasks =
             items
@@ -41,6 +42,7 @@ class _TaskViewState extends State<TaskView> {
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _tasks = _getMockTasks();
         _isLoading = false;
@@ -117,6 +119,7 @@ class _TaskViewState extends State<TaskView> {
       }
     } catch (e) {
       // 失败时回滚状态
+      if (!mounted) return;
       setState(() {
         final index = _tasks.indexWhere((t) => t.id == task.id);
         if (index != -1) {

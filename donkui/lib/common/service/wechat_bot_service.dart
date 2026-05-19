@@ -95,14 +95,21 @@ class WeChatBotService {
       final json = jsonDecode(content) as Map<String, dynamic>;
 
       // 检查必要的字段是否存在
-      return json['token'] != null && json['token'].toString().isNotEmpty;
+      return json['token'] != null &&
+          json['token'].toString().isNotEmpty &&
+          json['baseUrl'] != null &&
+          json['baseUrl'].toString().isNotEmpty &&
+          json['accountId'] != null &&
+          json['accountId'].toString().isNotEmpty &&
+          json['userId'] != null &&
+          json['userId'].toString().isNotEmpty;
     } catch (e) {
       return false;
     }
   }
 
   /// 连接到微信
-  Future<void> connect() async {
+  Future<void> connect({bool allowInteractiveLogin = true}) async {
     if (_bot == null) {
       await initialize();
     }
@@ -115,8 +122,35 @@ class WeChatBotService {
     _errorMessage = null;
 
     try {
+      final hadCredentials = await hasValidCredentials();
+
       // 尝试登录（会自动加载已保存的凭证）
       await _bot!.login();
+
+      final shouldValidateSession = !allowInteractiveLogin || hadCredentials;
+      final isSessionValid =
+          !shouldValidateSession ||
+          await _bot!.validateSession(
+            timeout:
+                allowInteractiveLogin
+                    ? const Duration(seconds: 3)
+                    : const Duration(seconds: 2),
+          );
+      if (!isSessionValid) {
+        if (allowInteractiveLogin) {
+          await _forceReLogin();
+        } else {
+          await _clearSavedCredentials();
+          _bot?.stop();
+          _bot = null;
+          _currentStatus = WeChatConnectionStatus.disconnected;
+          _currentQRCode = null;
+          _errorMessage = null;
+          _qrCodeController.add(null);
+          _updateStatus(WeChatConnectionStatus.disconnected);
+        }
+        return;
+      }
 
       // 登录成功，启动消息轮询
       _updateStatus(WeChatConnectionStatus.connected);
@@ -134,6 +168,18 @@ class WeChatBotService {
         }
       });
     } catch (e) {
+      if (!allowInteractiveLogin) {
+        await _clearSavedCredentials();
+        _bot?.stop();
+        _bot = null;
+        _currentStatus = WeChatConnectionStatus.disconnected;
+        _currentQRCode = null;
+        _errorMessage = null;
+        _qrCodeController.add(null);
+        _updateStatus(WeChatConnectionStatus.disconnected);
+        return;
+      }
+
       _errorMessage = e.toString();
       _updateStatus(WeChatConnectionStatus.error);
       rethrow;
@@ -164,12 +210,7 @@ class WeChatBotService {
     await connect();
   }
 
-  /// 强制重新登录（删除凭证文件并显示二维码）
-  Future<void> _forceReLogin() async {
-    // 停止当前连接
-    _bot?.stop();
-
-    // 删除凭证文件
+  Future<void> _clearSavedCredentials() async {
     try {
       final credPath = await _getCredPath();
       final file = File(credPath);
@@ -179,6 +220,15 @@ class WeChatBotService {
     } catch (e) {
       // 删除失败静默处理
     }
+  }
+
+  /// 强制重新登录（删除凭证文件并显示二维码）
+  Future<void> _forceReLogin() async {
+    // 停止当前连接
+    _bot?.stop();
+
+    // 删除凭证文件
+    await _clearSavedCredentials();
 
     // 重置状态
     _currentStatus = WeChatConnectionStatus.disconnected;

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../app/conf/colors.dart';
@@ -22,6 +24,8 @@ class _OnboardingStepWeChatState extends State<OnboardingStepWeChat> {
   WeChatConnectionStatus _status = WeChatConnectionStatus.disconnected;
   String? _qrCodeUrl;
   String? _errorMessage;
+  StreamSubscription<WeChatConnectionStatus>? _statusSubscription;
+  StreamSubscription<String?>? _qrCodeSubscription;
 
   @override
   void initState() {
@@ -36,38 +40,36 @@ class _OnboardingStepWeChatState extends State<OnboardingStepWeChat> {
   }
 
   void _initStreams() {
-    _service.connectionStatus.listen((status) {
-      if (mounted) {
-        final oldStatus = _status;
+    _statusSubscription = _service.connectionStatus.listen((status) {
+      if (!mounted) return;
+      final oldStatus = _status;
 
-        setState(() {
-          _status = status;
-        });
+      setState(() {
+        _status = status;
+      });
 
-        if (status == WeChatConnectionStatus.connected) {
-          Future.delayed(const Duration(seconds: 1), () {
-            if (mounted) {
-              widget.onCompleted();
-            }
-          });
-        }
-
-        if (status == WeChatConnectionStatus.disconnected &&
-            oldStatus != WeChatConnectionStatus.disconnected) {
-          _handleDisconnectAndReconnect();
-        }
-      }
-    });
-
-    _service.qrCodeStream.listen((url) {
-      if (mounted) {
-        setState(() {
-          _qrCodeUrl = url;
-          if (url != null) {
-            _errorMessage = null;
+      if (status == WeChatConnectionStatus.connected) {
+        Future.delayed(const Duration(seconds: 1), () {
+          if (mounted) {
+            widget.onCompleted();
           }
         });
       }
+
+      if (status == WeChatConnectionStatus.disconnected &&
+          oldStatus != WeChatConnectionStatus.disconnected) {
+        _handleDisconnectAndReconnect();
+      }
+    });
+
+    _qrCodeSubscription = _service.qrCodeStream.listen((url) {
+      if (!mounted) return;
+      setState(() {
+        _qrCodeUrl = url;
+        if (url != null) {
+          _errorMessage = null;
+        }
+      });
     });
   }
 
@@ -84,6 +86,7 @@ class _OnboardingStepWeChatState extends State<OnboardingStepWeChat> {
 
   Future<void> _checkConnection() async {
     final hasCredentials = await _service.hasValidCredentials();
+    if (!mounted) return;
     if (hasCredentials) {
       await _service.connect();
     } else {
@@ -98,6 +101,7 @@ class _OnboardingStepWeChatState extends State<OnboardingStepWeChat> {
       });
       await _service.connect();
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = '连接失败: $e';
       });
@@ -106,6 +110,8 @@ class _OnboardingStepWeChatState extends State<OnboardingStepWeChat> {
 
   @override
   void dispose() {
+    _statusSubscription?.cancel();
+    _qrCodeSubscription?.cancel();
     super.dispose();
   }
 

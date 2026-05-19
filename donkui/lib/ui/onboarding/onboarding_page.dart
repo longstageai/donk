@@ -65,22 +65,25 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildWindowBar(),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildWindowBar(),
 
-            // 顶部进度指示器
-            _buildProgressIndicator(),
+              // 顶部进度指示器
+              _buildProgressIndicator(),
 
-            // 步骤内容
-            Expanded(child: _buildStepContent()),
+              // 步骤内容
+              Expanded(child: _buildStepContent()),
 
-            // 底部按钮
-            _buildBottomButtons(),
-          ],
+              // 底部按钮
+              _buildBottomButtons(),
+            ],
+          ),
         ),
       ),
     );

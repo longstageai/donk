@@ -67,6 +67,7 @@ class _TokenPageState extends State<TokenPage> {
       // 处理预算状态
       if (budgetResult['code'] == 0) {
         final budgetData = budgetResult['data'] as Map<String, dynamic>;
+        if (!mounted) return;
         setState(() {
           _statistics = {
             'todayConsumedTokens': budgetData['used'] ?? 0,
@@ -83,6 +84,7 @@ class _TokenPageState extends State<TokenPage> {
         final items = usageData['items'] as List<dynamic>? ?? [];
         final total = usageData['total'] as int? ?? 0;
 
+        if (!mounted) return;
         setState(() {
           _tokenDetails =
               items.map((item) {
@@ -125,13 +127,16 @@ class _TokenPageState extends State<TokenPage> {
         });
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = '加载失败: $e';
       });
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -187,6 +192,7 @@ class _TokenPageState extends State<TokenPage> {
               };
             }).toList();
 
+        if (!mounted) return;
         setState(() {
           _tokenDetails.addAll(newItems);
           _currentPage = nextPage;
@@ -196,9 +202,11 @@ class _TokenPageState extends State<TokenPage> {
     } catch (e) {
       // 加载更多失败，不显示错误，保持现有数据
     } finally {
-      setState(() {
-        _isLoadingMore = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoadingMore = false;
+        });
+      }
     }
   }
 

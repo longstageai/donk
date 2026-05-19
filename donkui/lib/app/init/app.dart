@@ -1,4 +1,3 @@
-import 'package:donk/common/service/process_manager_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
@@ -55,7 +54,7 @@ class App extends StatefulWidget {
     // 初始化依赖注入
     _initDependencies();
     // 检查微信登录状态，如有凭证则自动连接
-    await _checkWeChatLoginStatus();
+    _checkWeChatLoginStatus();
     // 初始化通知WebSocket服务
     await _initNotificationService();
     return true;
@@ -77,7 +76,7 @@ class App extends StatefulWidget {
       final wechatService = Get.find<WeChatBotService>();
       final hasCredentials = await wechatService.hasValidCredentials();
       if (hasCredentials) {
-        await wechatService.connect();
+        await wechatService.connect(allowInteractiveLogin: false);
       }
     } catch (e) {
       // 静默处理，不影响启动

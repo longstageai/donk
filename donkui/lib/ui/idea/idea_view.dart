@@ -37,11 +37,13 @@ class _IdeaViewState extends State<IdeaView> {
 
     try {
       final response = await SkillService.getSkills();
+      if (!mounted) return;
       setState(() {
         _skills = response.data;
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = '加载 Skill 失败: $e';
         _isLoading = false;
@@ -70,6 +72,7 @@ class _IdeaViewState extends State<IdeaView> {
       }
     } catch (e) {
       // 失败时回滚状态
+      if (!mounted) return;
       setState(() {
         final index = _skills.indexWhere((s) => s.name == skill.name);
         if (index != -1) {
@@ -99,6 +102,7 @@ class _IdeaViewState extends State<IdeaView> {
         ).showSnackBar(const SnackBar(content: Text('扫描完成')));
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = '扫描失败: $e';
         _isLoading = false;
@@ -139,6 +143,7 @@ class _IdeaViewState extends State<IdeaView> {
       }
     } catch (e) {
       // 失败时重新加载列表
+      if (!mounted) return;
       await _loadSkills();
       if (mounted) {
         ScaffoldMessenger.of(
@@ -181,6 +186,7 @@ class _IdeaViewState extends State<IdeaView> {
       }
     } catch (e) {
       // 失败时重新加载列表
+      if (!mounted) return;
       await _loadSkills();
       if (mounted) {
         ScaffoldMessenger.of(

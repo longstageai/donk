@@ -33,11 +33,13 @@ class _SettingPageState extends State<SettingPage> {
   Future<void> _loadSleepStatus() async {
     try {
       final data = await SettingService.getSleepStatus();
+      if (!mounted) return;
       setState(() {
         _sleepPrevention = data['is_active'] ?? true;
       });
     } catch (e) {
       // 出错时默认开启阻止睡眠
+      if (!mounted) return;
       setState(() => _sleepPrevention = true);
     }
   }
@@ -46,11 +48,13 @@ class _SettingPageState extends State<SettingPage> {
   Future<void> _loadKnowledgeConfig() async {
     try {
       final data = await SettingService.getKnowledgeConfig();
+      if (!mounted) return;
       setState(() {
         _knowledgeAutoBuild = data['enabled'] ?? true;
       });
     } catch (e) {
       // 出错时默认开启知识库自动构建
+      if (!mounted) return;
       setState(() => _knowledgeAutoBuild = true);
     }
   }
@@ -60,12 +64,15 @@ class _SettingPageState extends State<SettingPage> {
     setState(() => _isLoadingKnowledge = true);
     try {
       await SettingService.updateKnowledgeConfig(enabled: value);
+      if (!mounted) return;
       setState(() => _knowledgeAutoBuild = value);
       _showToast(value ? '已开启知识库自动构建' : '已关闭知识库自动构建');
     } catch (e) {
       _showToast('操作失败: $e');
     } finally {
-      setState(() => _isLoadingKnowledge = false);
+      if (mounted) {
+        setState(() => _isLoadingKnowledge = false);
+      }
     }
   }
 
@@ -78,12 +85,15 @@ class _SettingPageState extends State<SettingPage> {
       } else {
         await SettingService.allowSleep();
       }
+      if (!mounted) return;
       setState(() => _sleepPrevention = value);
       _showToast(value ? '已阻止系统睡眠' : '已恢复系统睡眠');
     } catch (e) {
       _showToast('操作失败: $e');
     } finally {
-      setState(() => _isLoadingSleep = false);
+      if (mounted) {
+        setState(() => _isLoadingSleep = false);
+      }
     }
   }
 

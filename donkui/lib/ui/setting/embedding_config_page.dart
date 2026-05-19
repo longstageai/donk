@@ -43,7 +43,8 @@ class _EmbeddingConfigPageState extends State<EmbeddingConfigPage> {
     },
     'doubao': {
       'label': '豆包',
-      'defaultBaseUrl': 'https://ark.cn-beijing.volces.com/api/v3/embeddings/multimodal',
+      'defaultBaseUrl':
+          'https://ark.cn-beijing.volces.com/api/v3/embeddings/multimodal',
       'defaultModel': 'doubao-embedding-vision-251215',
       'defaultDimension': '2048',
     },
@@ -86,13 +87,16 @@ class _EmbeddingConfigPageState extends State<EmbeddingConfigPage> {
           (data['embedding_dimension'] ?? config['defaultDimension']!)
               .toString();
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = '加载配置失败: $e';
       });
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -115,9 +119,11 @@ class _EmbeddingConfigPageState extends State<EmbeddingConfigPage> {
     } catch (e) {
       _showToast('保存失败: $e');
     } finally {
-      setState(() {
-        _isSaving = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
     }
   }
 

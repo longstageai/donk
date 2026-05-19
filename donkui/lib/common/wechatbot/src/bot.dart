@@ -92,6 +92,45 @@ class WeChatBot {
     _pollingLoop();
   }
 
+  /// 验证当前登录凭证是否仍然可用
+  Future<bool> validateSession({
+    Duration timeout = const Duration(seconds: 3),
+  }) async {
+    if (_credentials == null) {
+      return false;
+    }
+
+    try {
+      final response = await _protocol.getUpdates(
+        token: _credentials!.token,
+        cursor: _cursor ?? '',
+        timeout: timeout,
+      );
+
+      if (response.isSessionTimeout) {
+        _log(LogLevel.error, '会话已过期，需要重新登录');
+        await _handleSessionTimeout();
+        return false;
+      }
+
+      if (response.msgs.isNotEmpty) {
+        for (final wireMsg in response.msgs) {
+          await _handleIncomingMessage(wireMsg);
+        }
+      }
+
+      if (response.nextCursor != null) {
+        _cursor = response.nextCursor;
+      }
+
+      return response.isSuccess;
+    } catch (e) {
+      _log(LogLevel.error, '验证会话失败: $e');
+      options.onError?.call(e);
+      return false;
+    }
+  }
+
   /// 停止消息轮询
   void stop() {
     _stopped = true;

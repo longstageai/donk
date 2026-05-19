@@ -83,13 +83,16 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
       _baseUrlController.text =
           data['llm_base_url'] ?? config['defaultBaseUrl']!;
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = '加载配置失败: $e';
       });
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -111,9 +114,11 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
     } catch (e) {
       _showToast('保存失败: $e');
     } finally {
-      setState(() {
-        _isSaving = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
     }
   }
 

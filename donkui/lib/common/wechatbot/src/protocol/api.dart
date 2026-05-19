@@ -51,6 +51,7 @@ class ProtocolClient {
   Future<GetUpdatesResponse> getUpdates({
     required String token,
     String cursor = '',
+    Duration? timeout,
   }) async {
     final url = '$_baseUrl/ilink/bot/getupdates';
     final body = {'get_updates_buf': cursor, 'base_info': BaseInfo().toJson()};
@@ -58,7 +59,7 @@ class ProtocolClient {
       url,
       body: body,
       headers: Headers.authHeaders(token),
-      timeout: WeChatConstants.getUpdatesTimeout,
+      timeout: timeout ?? WeChatConstants.getUpdatesTimeout,
     );
     return GetUpdatesResponse.fromJson(response);
   }

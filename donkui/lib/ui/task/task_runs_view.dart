@@ -78,6 +78,7 @@ class _TaskRunsViewState extends State<TaskRunsView> {
       );
       final items = response['items'] as List<dynamic>? ?? [];
       _total = response['total'] as int? ?? 0;
+      if (!mounted) return;
       setState(() {
         _runs =
             items
@@ -92,12 +93,14 @@ class _TaskRunsViewState extends State<TaskRunsView> {
       final errorStr = e.toString();
       // 404 错误表示接口不存在，显示友好提示
       if (errorStr.contains('404')) {
+        if (!mounted) return;
         setState(() {
           _errorMessage =
               'API 接口未找到 (404)\n\n可能原因：\n1. 后端服务未启动\n2. 接口路径错误\n3. 该功能尚未实现';
           _isLoading = false;
         });
       } else {
+        if (!mounted) return;
         setState(() {
           _errorMessage = errorStr;
           _isLoading = false;
@@ -130,6 +133,7 @@ class _TaskRunsViewState extends State<TaskRunsView> {
               .map((item) => TaskHistory.fromJson(item as Map<String, dynamic>))
               .toList();
 
+      if (!mounted) return;
       setState(() {
         _runs.addAll(newRuns);
         _currentPage = nextPage;
@@ -137,6 +141,7 @@ class _TaskRunsViewState extends State<TaskRunsView> {
         _isLoadingMore = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoadingMore = false;
       });
