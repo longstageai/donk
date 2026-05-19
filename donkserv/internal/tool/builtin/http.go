@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"html"
 	"io"
 	"net/http"
 	"net/url"
@@ -47,6 +48,14 @@ var DefaultHTTPConfig = HTTPConfig{
 		"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
 	},
 }
+
+var (
+	htmlScriptRegex     = regexp.MustCompile(`(?is)<script[^>]*>.*?</script>`)
+	htmlStyleRegex      = regexp.MustCompile(`(?is)<style[^>]*>.*?</style>`)
+	htmlCommentRegex    = regexp.MustCompile(`(?s)<!--.*?-->`)
+	htmlTagRegex        = regexp.MustCompile(`(?s)<[^>]+>`)
+	htmlWhitespaceRegex = regexp.MustCompile(`\s+`)
+)
 
 // HTTP 工具
 // 用于发送HTTP请求，支持重试机制、超时控制、安全检查
@@ -158,14 +167,14 @@ func (h *HTTP) Execute(ctx *tool.Context) (*tool.Result, error) {
 
 	// 获取超时
 	timeout := h.config.Timeout
-	if t, ok := ctx.Params["timeout"].(float64); ok && t > 0 {
-		timeout = time.Duration(t) * time.Second
+	if t, ok := parsePositiveDuration(ctx.Params["timeout"]); ok {
+		timeout = t
 	}
 
 	// 获取重试次数
 	retries := h.config.MaxRetries
-	if r, ok := ctx.Params["retries"].(float64); ok && r >= 0 {
-		retries = int(r)
+	if r, ok := parseNonNegativeInt(ctx.Params["retries"]); ok {
+		retries = r
 	}
 
 	// 获取是否跟随重定向
@@ -188,24 +197,22 @@ func (h *HTTP) Execute(ctx *tool.Context) (*tool.Result, error) {
 	}
 
 	// 构建请求体
-	var body io.Reader
+	var bodyData []byte
 	contentType := ""
 	if b, ok := ctx.Params["body"].(string); ok && b != "" {
-		body = strings.NewReader(b)
+		bodyData = []byte(b)
 		contentType = "text/plain"
 	} else if b, ok := ctx.Params["body"].(map[string]any); ok {
 		jsonData, err := json.Marshal(b)
 		if err != nil {
 			return tool.NewErrorResultWithMsg(tool.ErrCodeInvalidParams, fmt.Sprintf("请求体JSON序列化失败: %v", err)), nil
 		}
-		body = bytes.NewReader(jsonData)
+		bodyData = jsonData
 		contentType = "application/json"
 	}
 
-	if contentType != "" {
-		if _, exists := headers["Content-Type"]; !exists {
-			headers["Content-Type"] = contentType
-		}
+	if contentType != "" && !hasHeader(headers, "Content-Type") {
+		headers["Content-Type"] = contentType
 	}
 
 	// 创建HTTP客户端
@@ -222,13 +229,15 @@ func (h *HTTP) Execute(ctx *tool.Context) (*tool.Result, error) {
 	startTime := time.Now()
 	var lastErr error
 	var resp *http.Response
+	attempts := 0
 
 	for attempt := 0; attempt <= retries; attempt++ {
+		attempts = attempt + 1
 		if attempt > 0 {
 			time.Sleep(h.config.RetryDelay * time.Duration(attempt))
 		}
 
-		resp, lastErr = h.doRequest(client, ctx.Values, method, reqURL, headers, body)
+		resp, lastErr = h.doRequest(client, ctx.Values, method, reqURL, headers, bodyData)
 		if lastErr == nil && resp != nil && resp.StatusCode < 500 {
 			break
 		}
@@ -258,26 +267,18 @@ func (h *HTTP) Execute(ctx *tool.Context) (*tool.Result, error) {
 		}
 	}
 
-	// 尝试解析JSON响应
-	var responseData interface{}
 	responseText := string(respBody)
 
 	// 清理HTML标签，提取纯文本
 	cleanText := stripHTML(responseText)
 
-	if err := json.Unmarshal(respBody, &responseData); err != nil {
-		responseData = responseText
-	}
-
 	result := tool.NewResult(map[string]any{
 		"status_code": resp.StatusCode,
 		"status":      resp.Status,
 		"headers":     responseHeaders,
-		"body":        responseData,
-		"text":        responseText,
-		"clean_text":  cleanText,
+		"body":        cleanText,
 		"duration_ms": time.Since(startTime).Milliseconds(),
-		"retries":     retries,
+		"retries":     attempts - 1,
 	})
 	result.SetExecutionTime(time.Since(startTime))
 
@@ -285,7 +286,12 @@ func (h *HTTP) Execute(ctx *tool.Context) (*tool.Result, error) {
 }
 
 // doRequest 执行单次HTTP请求
-func (h *HTTP) doRequest(client *http.Client, ctx context.Context, method, url string, headers map[string]string, body io.Reader) (*http.Response, error) {
+func (h *HTTP) doRequest(client *http.Client, ctx context.Context, method, url string, headers map[string]string, bodyData []byte) (*http.Response, error) {
+	var body io.Reader
+	if len(bodyData) > 0 {
+		body = bytes.NewReader(bodyData)
+	}
+
 	req, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		return nil, err
@@ -346,6 +352,63 @@ func (h *HTTP) isValidMethod(method string) bool {
 	return false
 }
 
+func parsePositiveDuration(value any) (time.Duration, bool) {
+	seconds, ok := parsePositiveFloat(value)
+	if !ok {
+		return 0, false
+	}
+	return time.Duration(seconds * float64(time.Second)), true
+}
+
+func parsePositiveFloat(value any) (float64, bool) {
+	switch v := value.(type) {
+	case float64:
+		return v, v > 0
+	case float32:
+		return float64(v), v > 0
+	case int:
+		return float64(v), v > 0
+	case int64:
+		return float64(v), v > 0
+	case int32:
+		return float64(v), v > 0
+	case json.Number:
+		f, err := v.Float64()
+		return f, err == nil && f > 0
+	default:
+		return 0, false
+	}
+}
+
+func parseNonNegativeInt(value any) (int, bool) {
+	switch v := value.(type) {
+	case float64:
+		return int(v), v >= 0
+	case float32:
+		return int(v), v >= 0
+	case int:
+		return v, v >= 0
+	case int64:
+		return int(v), v >= 0
+	case int32:
+		return int(v), v >= 0
+	case json.Number:
+		i, err := v.Int64()
+		return int(i), err == nil && i >= 0
+	default:
+		return 0, false
+	}
+}
+
+func hasHeader(headers map[string]string, name string) bool {
+	for k := range headers {
+		if strings.EqualFold(k, name) {
+			return true
+		}
+	}
+	return false
+}
+
 // HTTPRequest HTTP请求参数（用于程序化调用）
 type HTTPRequest struct {
 	URL         string            `json:"url"`          // 请求URL
@@ -393,42 +456,12 @@ func SimpleHTTP() tool.Tool {
 }
 
 // stripHTML 去除HTML标签，提取纯文本
-func stripHTML(html string) string {
-	// 移除 script 标签及其内容
-	scriptRegex := regexp.MustCompile(`(?i)<script[^>]*>[\s\S]*?</script>`)
-	html = scriptRegex.ReplaceAllString(html, "")
-
-	// 移除 style 标签及其内容
-	styleRegex := regexp.MustCompile(`(?i)<style[^>]*>[\s\S]*?</style>`)
-	html = styleRegex.ReplaceAllString(html, "")
-
-	// 移除 HTML 注释
-	commentRegex := regexp.MustCompile(`<!--[\s\S]*?-->`)
-	html = commentRegex.ReplaceAllString(html, "")
-
-	// 移除所有 HTML 标签
-	tagRegex := regexp.MustCompile(`<[^>]+>`)
-	html = tagRegex.ReplaceAllString(html, "")
-
-	// 解码 HTML 实体
-	html = strings.ReplaceAll(html, "&nbsp;", " ")
-	html = strings.ReplaceAll(html, "&lt;", "<")
-	html = strings.ReplaceAll(html, "&gt;", ">")
-	html = strings.ReplaceAll(html, "&amp;", "&")
-	html = strings.ReplaceAll(html, "&quot;", "\"")
-	html = strings.ReplaceAll(html, "&#39;", "'")
-	html = strings.ReplaceAll(html, "&ldquo;", "\"")
-	html = strings.ReplaceAll(html, "&rdquo;", "\"")
-	html = strings.ReplaceAll(html, "&lsquo;", "'")
-	html = strings.ReplaceAll(html, "&rsquo;", "'")
-	html = strings.ReplaceAll(html, "&hellip;", "...")
-	html = strings.ReplaceAll(html, "&mdash;", "—")
-	html = strings.ReplaceAll(html, "&ndash;", "–")
-
-	// 规范化空白字符
-	whitespaceRegex := regexp.MustCompile(`\s+`)
-	html = whitespaceRegex.ReplaceAllString(html, " ")
-
-	// 去除首尾空白
-	return strings.TrimSpace(html)
+func stripHTML(rawHTML string) string {
+	text := htmlScriptRegex.ReplaceAllString(rawHTML, "")
+	text = htmlStyleRegex.ReplaceAllString(text, "")
+	text = htmlCommentRegex.ReplaceAllString(text, "")
+	text = htmlTagRegex.ReplaceAllString(text, "")
+	text = html.UnescapeString(text)
+	text = htmlWhitespaceRegex.ReplaceAllString(text, " ")
+	return strings.TrimSpace(text)
 }

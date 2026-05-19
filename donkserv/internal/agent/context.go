@@ -45,10 +45,16 @@ func (a *Agent) buildSystemMessage() string {
 	}
 
 	// 添加当前上下文
-	contextInfo := fmt.Sprintf("\n\n- **时间**: %s\n- **时区**: %s\n- **工作空间**: %s\n- **操作系统**: %s\n",
+	//contextInfo := fmt.Sprintf("\n\n- **时间**: %s\n- **时区**: %s\n- **工作空间**: %s\n- **操作系统**: %s\n",
+	//	time.Now().Format("2006-01-02 15:04:05"),
+	//	time.Now().Location().String(),
+	//	a.workspace,
+	//	getOSInfo(),
+	//)
+
+	contextInfo := fmt.Sprintf("\n\n- **时间**: %s\n- **时区**: %s\n- **操作系统**: %s\n",
 		time.Now().Format("2006-01-02 15:04:05"),
 		time.Now().Location().String(),
-		a.workspace,
 		getOSInfo(),
 	)
 	sb.WriteString(contextInfo)

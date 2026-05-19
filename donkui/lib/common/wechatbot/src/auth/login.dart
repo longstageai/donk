@@ -32,42 +32,34 @@ class LoginManager {
 
   /// 执行完整的登录流程
   Future<Credentials> _performLogin() async {
-    int refreshCount = 0;
+    try {
+      // 1. 获取二维码
+      final qrResponse = await _client.getBotQRCode();
+      _log(LogLevel.info, '获取二维码成功: ${qrResponse.qrcodeImgContent}');
 
-    while (refreshCount < WeChatConstants.maxQRRefreshCount) {
-      try {
-        // 1. 获取二维码
-        final qrResponse = await _client.getBotQRCode();
-        _log(LogLevel.info, '获取二维码成功: ${qrResponse.qrcodeImgContent}');
-
-        // 通知二维码URL
-        if (qrResponse.qrcodeImgContent.isNotEmpty) {
-          _options.onQrUrl?.call(qrResponse.qrcodeImgContent);
-        } else {
-          _log(LogLevel.error, '二维码URL为空');
-        }
-
-        // 2. 轮询扫码状态
-        final credentials = await _pollQRCodeStatus(qrResponse.qrcode);
-
-        if (credentials != null) {
-          // 保存凭证
-          await _saveCredentials(credentials);
-          _log(LogLevel.info, '登录成功');
-          return credentials;
-        }
-      } on QRCodeExpiredException {
-        refreshCount++;
-        _log(
-          LogLevel.warn,
-          '二维码过期，刷新重试 ($refreshCount/${WeChatConstants.maxQRRefreshCount})',
-        );
-        _options.onExpired?.call();
-        continue;
+      // 通知二维码URL
+      if (qrResponse.qrcodeImgContent.isNotEmpty) {
+        _options.onQrUrl?.call(qrResponse.qrcodeImgContent);
+      } else {
+        _log(LogLevel.error, '二维码URL为空');
       }
+
+      // 2. 轮询扫码状态
+      final credentials = await _pollQRCodeStatus(qrResponse.qrcode);
+
+      if (credentials != null) {
+        // 保存凭证
+        await _saveCredentials(credentials);
+        _log(LogLevel.info, '登录成功');
+        return credentials;
+      }
+    } on QRCodeExpiredException {
+      _log(LogLevel.warn, '二维码已过期');
+      _options.onExpired?.call();
+      throw Exception('登录失败：二维码已过期，请手动重新获取二维码');
     }
 
-    throw Exception('登录失败：二维码过期次数超过限制');
+    throw Exception('登录失败：未获取到登录凭证');
   }
 
   /// 轮询二维码状态

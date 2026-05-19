@@ -39,7 +39,6 @@ coverage/
 tmp/
 temp/
 
-/donkserv/data/
 /donkserv/logs/
 /donkserv/go.work
 /donkserv/sh/donk

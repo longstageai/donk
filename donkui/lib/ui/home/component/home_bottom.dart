@@ -1,7 +1,9 @@
+import 'package:donk/common/service/wechat_bot_service.dart';
 import 'package:donk/common/util/color_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 import '../home_controller.dart';
 
@@ -73,44 +75,105 @@ class _HomeBottomState extends State<HomeBottom> {
   Widget header(BuildContext context) {
     return Container(
       height: 40,
-      alignment: Alignment.centerLeft,
-      child: SizedBox(
-        width: 100,
+      padding: EdgeInsets.only(left: 0, right: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // SizedBox(
+          //   width: 100,
+          //   child: Row(
+          //     mainAxisSize: MainAxisSize.min,
+          //     crossAxisAlignment: CrossAxisAlignment.center,
+          //     mainAxisAlignment: MainAxisAlignment.spaceAround,
+          //     children: [
+          //       IconButton(
+          //         onPressed: () {},
+          //         icon: Icon(Icons.receipt_long, size: 16),
+          //         padding: EdgeInsets.zero,
+          //         constraints: BoxConstraints(),
+          //       ),
+          //       TextButton(
+          //         onPressed: () {},
+          //         style: TextButton.styleFrom(
+          //           padding: EdgeInsets.zero,
+          //           minimumSize: Size(0, 0),
+          //         ),
+          //         child: Text(
+          //           "@Builder",
+          //           style: TextStyle(
+          //             fontSize: 12,
+          //             color: ColorUtil.fromHex("#5e6267"),
+          //           ),
+          //         ),
+          //       ),
+          //       IconButton(
+          //         onPressed: () {},
+          //         icon: Icon(Icons.settings_suggest_outlined, size: 16),
+          //         padding: EdgeInsets.zero,
+          //         constraints: BoxConstraints(),
+          //       ),
+          //     ],
+          //   ),
+          // ),
+          _wechatStatus(),
+          logo(),
+        ],
+      ),
+    );
+  }
+
+  Widget logo() {
+    return Center(
+      child: LoadingAnimationWidget.discreteCircle(
+        color: Colors.white,
+        size: 20,
+      ),
+    );
+  }
+
+  Widget _wechatStatus() {
+    return Obx(() {
+      final status = controller.wechatStatus.value;
+      final color = _wechatStatusColor(status);
+
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: color.withAlpha(20),
+          borderRadius: BorderRadius.circular(12),
+        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            IconButton(
-              onPressed: () {},
-              icon: Icon(Icons.receipt_long, size: 16),
-              padding: EdgeInsets.zero,
-              constraints: BoxConstraints(),
+            Container(
+              width: 7,
+              height: 7,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             ),
-            TextButton(
-              onPressed: () {},
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: Size(0, 0),
-              ),
-              child: Text(
-                "@Builder",
-                style: TextStyle(
-                  fontSize: 12,
-                  color: ColorUtil.fromHex("#5e6267"),
-                ),
-              ),
-            ),
-            IconButton(
-              onPressed: () {},
-              icon: Icon(Icons.settings_suggest_outlined, size: 16),
-              padding: EdgeInsets.zero,
-              constraints: BoxConstraints(),
+            SizedBox(width: 5),
+            Text(
+              '微信${status.displayName}',
+              style: TextStyle(fontSize: 12, color: color),
             ),
           ],
         ),
-      ),
-    );
+      );
+    });
+  }
+
+  Color _wechatStatusColor(WeChatConnectionStatus status) {
+    switch (status) {
+      case WeChatConnectionStatus.connected:
+        return ColorUtil.fromHex("#0fdc78");
+      case WeChatConnectionStatus.connecting:
+      case WeChatConnectionStatus.waitingForScan:
+      case WeChatConnectionStatus.scanning:
+        return Colors.orange.shade700;
+      case WeChatConnectionStatus.error:
+        return Colors.red.shade600;
+      case WeChatConnectionStatus.disconnected:
+        return ColorUtil.fromHex("#8a8f94");
+    }
   }
 
   Widget bottomLeft() {

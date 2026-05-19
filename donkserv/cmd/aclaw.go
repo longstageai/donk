@@ -109,13 +109,13 @@ func (init *AppInitializer) initConfigServices() error {
 	}
 
 	// 初始化技能发现模块
-	skillDiscoveryInit, err := skilldiscovery.Init(init.db.DB)
-	if err != nil {
-		// 非致命错误，记录日志但继续启动
-		fmt.Printf("初始化技能发现模块失败: %v\n", err)
-	} else {
-		init.skillDiscoveryInit = skillDiscoveryInit
-	}
+	//skillDiscoveryInit, err := skilldiscovery.Init(init.db.DB)
+	//if err != nil {
+	//	// 非致命错误，记录日志但继续启动
+	//	fmt.Printf("初始化技能发现模块失败: %v\n", err)
+	//} else {
+	//	init.skillDiscoveryInit = skillDiscoveryInit
+	//}
 
 	return nil
 }
@@ -208,7 +208,7 @@ func (init *AppInitializer) registerShutdownHooks() {
 	// 注册MultiAgent服务
 	init.app.RegisterTaskFunc("multiagent", func(ctx context.Context, application *appctx.Application) error {
 		go func() {
-			init.multiAgentService.Start()
+			//init.multiAgentService.Start()
 		}()
 		<-ctx.Done()
 		init.multiAgentService.Stop()

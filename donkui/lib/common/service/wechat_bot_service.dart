@@ -9,6 +9,8 @@ import '../wechatbot/wechatbot.dart';
 class WeChatBotService {
   static WeChatBotService? _instance;
   WeChatBot? _bot;
+  Future<void>? _connectingFuture;
+  int _connectionGeneration = 0;
 
   // 状态流
   final _connectionStatusController =
@@ -50,14 +52,20 @@ class WeChatBotService {
         credPath: credPath,
         logLevel: LogLevel.info,
         onQrUrl: (url) {
+          if (_currentStatus == WeChatConnectionStatus.connected) return;
+          if (_connectingFuture == null) return;
           _currentQRCode = url;
           _qrCodeController.add(url);
           _updateStatus(WeChatConnectionStatus.waitingForScan);
         },
         onScanned: () {
+          if (_currentStatus == WeChatConnectionStatus.connected) return;
+          if (_connectingFuture == null) return;
           _updateStatus(WeChatConnectionStatus.scanning);
         },
         onExpired: () {
+          if (_currentStatus == WeChatConnectionStatus.connected) return;
+          if (_connectingFuture == null) return;
           _currentQRCode = null;
           _qrCodeController.add(null);
         },
@@ -109,12 +117,37 @@ class WeChatBotService {
   }
 
   /// 连接到微信
-  Future<void> connect({bool allowInteractiveLogin = true}) async {
+  Future<void> connect({bool allowInteractiveLogin = true}) {
+    if (_connectingFuture != null) {
+      return _connectingFuture!;
+    }
+
+    final generation = ++_connectionGeneration;
+    _connectingFuture = _connectInternal(
+      allowInteractiveLogin: allowInteractiveLogin,
+      generation: generation,
+    ).whenComplete(() {
+      if (_connectionGeneration == generation) {
+        _connectingFuture = null;
+      }
+    });
+
+    return _connectingFuture!;
+  }
+
+  Future<void> _connectInternal({
+    bool allowInteractiveLogin = true,
+    required int generation,
+  }) async {
     if (_bot == null) {
       await initialize();
     }
 
-    if (_currentStatus == WeChatConnectionStatus.connected) {
+    if (_connectionGeneration != generation) return;
+
+    if (_currentStatus == WeChatConnectionStatus.connected ||
+        _bot?.isRunning == true) {
+      _updateStatus(WeChatConnectionStatus.connected);
       return;
     }
 
@@ -127,14 +160,23 @@ class WeChatBotService {
       // 尝试登录（会自动加载已保存的凭证）
       await _bot!.login();
 
+      if (_connectionGeneration != generation) return;
+
+      if (_bot?.isRunning == true) {
+        _updateStatus(WeChatConnectionStatus.connected);
+        _currentQRCode = null;
+        _qrCodeController.add(null);
+        return;
+      }
+
       final shouldValidateSession = !allowInteractiveLogin || hadCredentials;
       final isSessionValid =
           !shouldValidateSession ||
           await _bot!.validateSession(
             timeout:
                 allowInteractiveLogin
-                    ? const Duration(seconds: 3)
-                    : const Duration(seconds: 2),
+                    ? const Duration(seconds: 40)
+                    : const Duration(seconds: 30),
           );
       if (!isSessionValid) {
         if (allowInteractiveLogin) {
@@ -188,11 +230,29 @@ class WeChatBotService {
 
   /// 断开连接
   Future<void> disconnect() async {
+    _cancelPendingConnection();
     if (_bot == null) return;
 
     _bot!.stop();
     await _bot!.logout();
     _updateStatus(WeChatConnectionStatus.disconnected);
+  }
+
+  void cancelPendingConnection() {
+    if (isConnected) return;
+    _cancelPendingConnection();
+  }
+
+  void _cancelPendingConnection() {
+    _connectionGeneration++;
+    _connectingFuture = null;
+    _currentQRCode = null;
+    _qrCodeController.add(null);
+    if (!isConnected) {
+      _bot?.stop();
+      _bot = null;
+      _updateStatus(WeChatConnectionStatus.disconnected);
+    }
   }
 
   /// 重新连接
@@ -203,6 +263,7 @@ class WeChatBotService {
 
   /// 强制重新登录（清除凭证）
   Future<void> forceReconnect() async {
+    _cancelPendingConnection();
     if (_bot != null) {
       await _bot!.logout();
     }
@@ -224,6 +285,8 @@ class WeChatBotService {
 
   /// 强制重新登录（删除凭证文件并显示二维码）
   Future<void> _forceReLogin() async {
+    _cancelPendingConnection();
+
     // 停止当前连接
     _bot?.stop();
 
@@ -299,6 +362,8 @@ class WeChatBotService {
 
   /// 处理会话过期
   Future<void> _handleSessionTimeout() async {
+    _cancelPendingConnection();
+
     // 停止当前连接
     _bot?.stop();
 

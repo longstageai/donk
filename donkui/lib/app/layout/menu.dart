@@ -25,7 +25,7 @@ class _AppMenuState extends State<AppMenu> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
     _rotationController = AnimationController(
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 300),
       vsync: this,
     );
     _rotationAnimation = Tween<double>(
@@ -88,8 +88,8 @@ class _AppMenuState extends State<AppMenu> with SingleTickerProviderStateMixin {
                 return Transform.rotate(
                   angle: _rotationAnimation.value,
                   child: Container(
-                    width: 52,
-                    height: 52,
+                    width: 50,
+                    height: 50,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: const SweepGradient(

@@ -305,6 +305,10 @@ func (b *AgentBuilder) initTools() {
 	registry.Register(builtin.NewCalculator())
 	registry.Register(builtin.NewFileReader())
 	registry.Register(builtin.NewFileWriter())
+	registry.Register(builtin.NewPDFParser())
+	registry.Register(builtin.NewWordParser())
+	registry.Register(builtin.NewOfficialSkillsSearch())
+	registry.Register(builtin.NewSkillInstaller(filepath.Join(b.workspace, "skills")))
 	registry.Register(builtin.NewCommandExecutor())
 	//registry.Register(builtin.NewBrowserController())
 	registry.Register(builtin.NewMemorySaver(b.longMemory))
@@ -548,8 +552,11 @@ func NewTaskAgent() (*agent.Agent, error) {
 	// 初始化工具
 	builder.initTools()
 
+	execPath, _ := os.Getwd()
+	workspace := filepath.Join(execPath, "data")
+
 	// 创建轻量级 Agent
-	return agent.New(builder.llmAdapter, builder.tools, nil, nil), nil
+	return agent.New(builder.llmAdapter, builder.tools, nil, nil, agent.WithWorkspace(workspace)), nil
 }
 
 // initLLM 初始化LLM模型适配器

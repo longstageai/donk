@@ -1,6 +1,7 @@
 import 'package:donk/app/conf/config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../conf/colors.dart';
@@ -48,6 +49,7 @@ class _DonkAppBarState extends State<DonkAppBar> {
               color: Colors.black87,
             ),
           ),
+          SizedBox(width: 14,),
         ],
       ),
     );
@@ -108,6 +110,15 @@ class _DonkAppBarState extends State<DonkAppBar> {
           tooltip: '关闭',
         ),
       ],
+    );
+  }
+
+  Widget logo() {
+    return Center(
+      child: LoadingAnimationWidget.discreteCircle(
+        color: Colors.white,
+        size: 20,
+      ),
     );
   }
 

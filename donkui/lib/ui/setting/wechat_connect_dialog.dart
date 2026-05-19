@@ -144,6 +144,7 @@ class _WeChatConnectDialogState extends State<WeChatConnectDialog> {
 
   @override
   void dispose() {
+    _service.cancelPendingConnection();
     _statusSubscription?.cancel();
     _qrCodeSubscription?.cancel();
     super.dispose();

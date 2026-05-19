@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -10,23 +11,25 @@ import (
 // Hub 是 WebSocket 连接的中心管理器
 // 负责维护所有活跃客户端连接，并处理消息的广播分发
 type Hub struct {
-	clients    map[*Client]bool // 已连接的客户端集合
-	register   chan *Client     // 客户端注册通道
-	unregister chan *Client     // 客户端注销通道
-	broadcast  chan []byte      // 广播消息通道
-	exit       chan struct{}    // 退出信号通道
-	mu         sync.RWMutex     // 保护 clients map 的读写锁
+	clients      map[*Client]bool // 已连接的客户端集合
+	register     chan *Client     // 客户端注册通道
+	unregister   chan *Client     // 客户端注销通道
+	broadcast    chan []byte      // 广播消息通道
+	exit         chan struct{}    // 退出信号通道
+	summaryAgent *NotificationSummaryAgent
+	mu           sync.RWMutex // 保护 clients map 的读写锁
 }
 
 // NewHub 创建并初始化一个新的 Hub 实例
 // 返回初始化好的 Hub 管理器
 func NewHub() *Hub {
 	return &Hub{
-		clients:    make(map[*Client]bool),
-		register:   make(chan *Client),
-		unregister: make(chan *Client),
-		broadcast:  make(chan []byte, 256),
-		exit:       make(chan struct{}),
+		clients:      make(map[*Client]bool),
+		register:     make(chan *Client),
+		unregister:   make(chan *Client),
+		broadcast:    make(chan []byte, 256),
+		exit:         make(chan struct{}),
+		summaryAgent: NewNotificationSummaryAgent(),
 	}
 }
 
@@ -145,15 +148,19 @@ func (h *Hub) Broadcast(msg *Message) error {
 // BroadcastJSON 直接广播原始 JSON 数据（非阻塞）
 // data: JSON 格式的字节数据
 func (h *Hub) BroadcastJSON(data []byte) {
-	select {
-	case h.broadcast <- data:
-		// 成功发送
-	default:
-		// 通道已满，丢弃消息
-		logger.Warn("广播通道已满，消息被丢弃", map[string]interface{}{
-			"channelSize": len(h.broadcast),
-		})
-	}
+	go func(data []byte) {
+		if h.summaryAgent != nil {
+			data = h.summaryAgent.SummarizeJSON(context.Background(), data)
+		}
+
+		select {
+		case h.broadcast <- data:
+		default:
+			logger.Warn("广播通道已满，消息被丢弃", map[string]interface{}{
+				"channelSize": len(h.broadcast),
+			})
+		}
+	}(data)
 }
 
 // ClientCount 返回当前已连接的客户端数量

@@ -89,6 +89,10 @@ func (a *Agent) executeTool(name string, params map[string]any, step int) *tool.
 	// 记录开始时间
 	startTime := time.Now()
 
+	if name == "command_executor" && a.workspace != "" {
+		params["working_dir"] = a.workspace
+	}
+
 	// 执行工具
 	result, err := a.tools.Execute(name, params)
 	// 计算执行时长

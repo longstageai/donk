@@ -94,7 +94,7 @@ class WeChatBot {
 
   /// 验证当前登录凭证是否仍然可用
   Future<bool> validateSession({
-    Duration timeout = const Duration(seconds: 3),
+    Duration timeout = const Duration(seconds: 30),
   }) async {
     if (_credentials == null) {
       return false;
