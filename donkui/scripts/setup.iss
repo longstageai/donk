@@ -91,15 +91,15 @@ Source: "..\build\windows\x64\runner\Release\data\*"; DestDir: "{app}\data"; Fla
 Source: "..\build\windows\x64\runner\Release\server\*"; DestDir: "{app}\server"; Flags: ignoreversion recursesubdirs
 
 ; 图标文件
-Source: "..\assets\img\app.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\assets\img\app2.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 ; 开始菜单快捷方式
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\app.ico"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\app2.ico"
 Name: "{group}\卸载 {#MyAppName}"; Filename: "{uninstallexe}"
 
 ; 桌面快捷方式
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\app.ico"; Tasks: desktopicon
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\app2.ico"; Tasks: desktopicon
 
 [Run]
 ; 安装完成后可选启动

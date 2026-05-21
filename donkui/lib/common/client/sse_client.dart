@@ -201,7 +201,11 @@ class SSEClient {
   /// Content-Type: application/json
   /// Accept: text/event-stream
   /// Body: {"content": "用户消息"}
-  Future<void> connect(String message) async {
+  Future<void> connect(
+    String message, {
+    String? filePath,
+    String? fileType,
+  }) async {
     if (kDebugMode) {
       print('SSE connect called, status: $_status, isDisposed: $_isDisposed');
     }
@@ -237,7 +241,12 @@ class SSEClient {
       }
 
       // 发送请求体，使用 UTF-8 编码支持中文
-      final body = jsonEncode({'content': message});
+      final requestBody = {
+        'content': message,
+        if (filePath != null && filePath.isNotEmpty) 'file_path': filePath,
+        if (fileType != null && fileType.isNotEmpty) 'file_type': fileType,
+      };
+      final body = jsonEncode(requestBody);
       request.add(utf8.encode(body));
 
       final response = await request.close();

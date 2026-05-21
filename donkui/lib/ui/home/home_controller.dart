@@ -134,21 +134,31 @@ class HomeController extends GetxController {
 
   // ==================== 公共方法 ====================
   /// 添加用户消息并发送给 Agent
-  Future<void> addUserMessage(String content) async {
+  Future<void> addUserMessage(
+    String content, {
+    String? filePath,
+    String? fileType,
+  }) async {
     final message = ChatMessage.user(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       content: content,
+      filePath: filePath,
+      fileType: fileType,
     );
     chatMessages.add(message);
 
     // 输入框发送消息时，保持当前用户ID不变（如果已设置）
     // 这样Agent回复会发送给最近交互的微信用户
 
-    await sendMessage(content);
+    await sendMessage(content, filePath: filePath, fileType: fileType);
   }
 
   /// 发送消息到服务器（UI 调用，会等待完成）
-  Future<void> sendMessage(String content) async {
+  Future<void> sendMessage(
+    String content, {
+    String? filePath,
+    String? fileType,
+  }) async {
     if (_sseClient == null) {
       _handleSSEError('SSE 客户端未初始化');
       return;
@@ -160,7 +170,11 @@ class HomeController extends GetxController {
     }
 
     try {
-      await _sseClient!.connect(content);
+      await _sseClient!.connect(
+        content,
+        filePath: filePath,
+        fileType: fileType,
+      );
     } catch (e) {
       _handleSSEError('发送失败: $e');
     }
@@ -447,10 +461,7 @@ class HomeController extends GetxController {
     }
 
     try {
-      await _wechatService.sendMessage(
-        userId,
-        '抱歉，处理过程中出现错误：$error',
-      );
+      await _wechatService.sendMessage(userId, '抱歉，处理过程中出现错误：$error');
     } catch (e) {
       // 发送失败静默处理
     }
@@ -517,10 +528,7 @@ class HomeController extends GetxController {
     final replyContent = _currentAgentContent.toString();
 
     try {
-      await _wechatService.sendMessage(
-        userId,
-        replyContent,
-      );
+      await _wechatService.sendMessage(userId, replyContent);
     } catch (e) {
       // 发送失败静默处理
     }

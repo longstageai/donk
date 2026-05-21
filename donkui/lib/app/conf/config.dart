@@ -9,7 +9,7 @@ const String version = "1.0.0";
 
 // 服务器基础配置
 const String serverHost = "localhost";
-const int serverPort = 8080;
+const int serverPort = 65434;
 
 // HTTP API 基础地址
 const String apiBaseUrl = "http://$serverHost:$serverPort/api/v1";

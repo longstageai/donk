@@ -2,6 +2,7 @@ package skill
 
 import (
 	"net/http"
+	"sort"
 
 	"github.com/gin-gonic/gin"
 )
@@ -45,6 +46,7 @@ func (h *Handler) RegisterRoutes(r *gin.Engine) {
 
 // List 获取 Skill 列表
 // GET /api/v1/skills
+// 排序规则：先按启用状态（启用的在前），再按创建时间倒序（新的在前）
 func (h *Handler) List(c *gin.Context) {
 	skills, err := h.service.List()
 	if err != nil {
@@ -53,6 +55,14 @@ func (h *Handler) List(c *gin.Context) {
 		})
 		return
 	}
+
+	// 排序：先按启用状态（启用的在前），再按创建时间倒序（新的在前）
+	sort.Slice(skills, func(i, j int) bool {
+		if skills[i].Enabled != skills[j].Enabled {
+			return skills[i].Enabled // 启用的排在前面
+		}
+		return skills[i].CreatedAt.After(skills[j].CreatedAt) // 创建时间倒序
+	})
 
 	c.JSON(http.StatusOK, gin.H{
 		"data":  skills,

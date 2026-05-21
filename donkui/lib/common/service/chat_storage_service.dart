@@ -36,6 +36,8 @@ class ChatStorageService {
                   'sender': msg.sender,
                   'content': msg.content,
                   'timestamp': msg.timestamp.toIso8601String(),
+                  'filePath': msg.filePath,
+                  'fileType': msg.fileType,
                   'reasoning': msg.reasoning,
                   'isReasoningCollapsed': msg.isReasoningCollapsed,
                   'isReasoning': msg.isReasoning,
@@ -72,6 +74,8 @@ class ChatStorageService {
               sender: json['sender'] as String,
               content: json['content'] as String,
               timestamp: DateTime.parse(json['timestamp'] as String),
+              filePath: json['filePath'] as String?,
+              fileType: json['fileType'] as String?,
               reasoning: json['reasoning'] as String?,
               isReasoningCollapsed:
                   json['isReasoningCollapsed'] as bool? ?? true,

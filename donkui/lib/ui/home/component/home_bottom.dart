@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:donk/common/service/wechat_bot_service.dart';
 import 'package:donk/common/util/color_util.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:path/path.dart' as p;
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 import '../home_controller.dart';
@@ -18,6 +22,8 @@ class _HomeBottomState extends State<HomeBottom> {
   final FocusNode _focusNode = FocusNode();
   final controller = Get.find<HomeController>();
   final TextEditingController _textController = TextEditingController();
+  String? _selectedFilePath;
+  String? _selectedFileType;
   Worker? _editTextWorker;
 
   @override
@@ -56,20 +62,86 @@ class _HomeBottomState extends State<HomeBottom> {
     super.dispose();
   }
 
-  /// 发送消息
   Future<void> _sendMessage() async {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
 
-    // 检查是否正在处理中，如果是则禁止发送
     if (controller.isProcessing) {
       return;
     }
 
-    // 先清空输入框，避免重复发送
-    _textController.clear();
+    final filePath = _selectedFilePath;
+    final fileType = _selectedFileType;
 
-    await controller.addUserMessage(text);
+    _textController.clear();
+    setState(() {
+      _selectedFilePath = null;
+      _selectedFileType = null;
+    });
+
+    await controller.addUserMessage(
+      text,
+      filePath: filePath,
+      fileType: fileType,
+    );
+  }
+
+  Future<void> _selectFileAndGenerate() async {
+    if (controller.isProcessing) {
+      return;
+    }
+
+    try {
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: const ['pdf', 'docx', 'txt', 'md'],
+        allowMultiple: false,
+        withData: false,
+        lockParentWindow: true,
+      );
+
+      final filePath = result?.files.single.path;
+      if (filePath == null || filePath.isEmpty) {
+        return;
+      }
+
+      final extension = p.extension(filePath).toLowerCase();
+      if (!_supportedFileExtensions.contains(extension)) {
+        _showSnackBar('仅支持 pdf、docx、txt、md 文件');
+        return;
+      }
+
+      final file = File(filePath);
+      if (!await file.exists()) {
+        _showSnackBar('文件不存在');
+        return;
+      }
+
+      setState(() {
+        _selectedFilePath = file.absolute.path;
+        _selectedFileType = extension.substring(1);
+      });
+      _focusNode.requestFocus();
+    } catch (e) {
+      _showSnackBar('选择文件失败: $e');
+    }
+  }
+
+  Set<String> get _supportedFileExtensions => {'.pdf', '.docx', '.txt', '.md'};
+
+  void _clearSelectedFile() {
+    setState(() {
+      _selectedFilePath = null;
+      _selectedFileType = null;
+    });
+  }
+
+  void _showSnackBar(String message) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+    );
   }
 
   Widget header(BuildContext context) {
@@ -116,7 +188,7 @@ class _HomeBottomState extends State<HomeBottom> {
           //   ),
           // ),
           _wechatStatus(),
-          logo(),
+          // logo(),
         ],
       ),
     );
@@ -178,11 +250,22 @@ class _HomeBottomState extends State<HomeBottom> {
 
   Widget bottomLeft() {
     return SizedBox(
-      width: 50,
+      width: 90,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
+          IconButton(
+            onPressed: () => _selectFileAndGenerate(),
+            tooltip: '上传文件生成',
+            icon: Icon(
+              Icons.attach_file_outlined,
+              size: 18,
+              color: ColorUtil.fromHex("#252729"),
+            ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
           TextButton(
             onPressed: () {},
             style: TextButton.styleFrom(
@@ -271,6 +354,55 @@ class _HomeBottomState extends State<HomeBottom> {
     controller.cancelRequest();
   }
 
+  Widget _selectedFilePreview() {
+    final filePath = _selectedFilePath!;
+    final fileName = p.basename(filePath);
+
+    return Container(
+      height: 32,
+      margin: const EdgeInsets.only(left: 8, right: 8, top: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: ColorUtil.fromHex("#dfe2e5")),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.insert_drive_file_outlined,
+            size: 16,
+            color: ColorUtil.fromHex("#5e6267"),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Tooltip(
+              message: filePath,
+              child: Text(
+                fileName,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: ColorUtil.fromHex("#252729"),
+                ),
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: _clearSelectedFile,
+            icon: Icon(
+              Icons.close,
+              size: 14,
+              color: ColorUtil.fromHex("#8a8f94"),
+            ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget bottom(BuildContext context) {
     return Container(
       width: double.infinity,
@@ -291,13 +423,15 @@ class _HomeBottomState extends State<HomeBottom> {
       ),
       child: Column(
         children: [
+          if (_selectedFilePath != null) _selectedFilePreview(),
           Expanded(
             child: _CustomTextField(
               focusNode: _focusNode,
               controller: _textController,
               onSubmitted: () => _sendMessage(),
               enabled: true,
-              hintText: '输入消息...',
+              hintText:
+                  _selectedFilePath == null ? '输入消息...' : '说明希望如何处理这个文件...',
             ),
           ),
           SizedBox(

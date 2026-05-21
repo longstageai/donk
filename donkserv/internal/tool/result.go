@@ -1,6 +1,7 @@
 package tool
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 )
@@ -58,7 +59,16 @@ func (r *Result) SetMetadata(key string, value any) {
 
 // String 将结果转换为字符串
 func (r *Result) String() string {
+	if r == nil {
+		return ""
+	}
 	if r.Error != nil {
+		if r.Error.Details != nil {
+			if content, err := json.Marshal(r.Error.Details); err == nil {
+				return fmt.Sprintf("%s details=%s", r.Error.Error(), string(content))
+			}
+			return fmt.Sprintf("%s details=%v", r.Error.Error(), r.Error.Details)
+		}
 		return r.Error.Error()
 	}
 	if r.Data == nil {
@@ -68,6 +78,9 @@ func (r *Result) String() string {
 	case string:
 		return v
 	default:
+		if content, err := json.Marshal(v); err == nil {
+			return string(content)
+		}
 		return fmt.Sprintf("%v", v)
 	}
 }

@@ -3,6 +3,10 @@ package builtin
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -27,9 +31,10 @@ const (
 // SkillTool 技能工具
 // 统一入口工具，通过参数区分不同的Skill和操作
 type SkillTool struct {
-	registry   *skill.SkillRegistry // Skill注册表
-	executor   *skill.Executor      // 执行器
-	workingDir string               // 工作目录
+	registry     *skill.SkillRegistry // Skill注册表
+	executor     *skill.Executor      // 执行器
+	workingDir   string               // 工作目录
+	scriptRunner *ScriptRunner        // Donk脚本执行器
 }
 
 // NewSkillTool 创建新的技能工具
@@ -46,9 +51,10 @@ func NewSkillTool(registry *skill.SkillRegistry, executor *skill.Executor, worki
 		executor = skill.NewExecutor(registry, skill.WithWorkingDir(workingDir))
 	}
 	return &SkillTool{
-		registry:   registry,
-		executor:   executor,
-		workingDir: workingDir,
+		registry:     registry,
+		executor:     executor,
+		workingDir:   workingDir,
+		scriptRunner: NewScriptRunner(WithScriptRunnerBaseDir(filepath.Join(workingDir, "script_runtime"))),
 	}
 }
 
@@ -75,7 +81,9 @@ func (t *SkillTool) Description() string {
 	sb.WriteString("使用方式:\n")
 	sb.WriteString("1. 根据用户意图选择最合适的技能\n")
 	sb.WriteString("2. 指定 skill_name 为技能名称\n")
-	sb.WriteString("3. 通过 action 参数指定操作类型（load_instructions, execute_script, load_references, load_assets, info）\n\n")
+	sb.WriteString("3. 通过 action 参数指定操作类型（load_instructions, execute_script, load_references, load_assets, info）\n")
+	sb.WriteString("4. execute_script 如未指定 params.script 且技能只有一个脚本，会自动执行该脚本；多个脚本时必须在 params.script 指定脚本名\n")
+	sb.WriteString("5. Python 脚本会使用 Donk script_runner 执行，不依赖系统全局 python；第三方依赖由 python_dependency_manager 管理\n\n")
 	sb.WriteString("可用的技能列表:\n")
 
 	skills := t.registry.List()
@@ -139,7 +147,7 @@ func (t *SkillTool) Parameters() *tool.Schema {
 		},
 		"params": {
 			Type:        "object",
-			Description: "操作参数，根据action类型不同而不同",
+			Description: "操作参数，根据action类型不同而不同。execute_script可传script和args；如果不传script且Skill只有一个脚本，会自动执行该脚本",
 		},
 	}
 	schema.Required = []string{"skill_name", "action"}
@@ -165,16 +173,19 @@ func (t *SkillTool) Execute(ctx *tool.Context) (*tool.Result, error) {
 
 	// 验证必填参数
 	if skillName == "" {
-		return tool.NewErrorResultWithMsg("MISSING_PARAM", "缺少必填参数skill_name"), nil
+		return t.errorResult("MISSING_PARAM", "缺少必填参数skill_name", map[string]any{"action": action}), nil
 	}
 	if action == "" {
-		return tool.NewErrorResultWithMsg("MISSING_PARAM", "缺少必填参数action"), nil
+		return t.errorResult("MISSING_PARAM", "缺少必填参数action", map[string]any{"skill_name": skillName}), nil
 	}
 
 	// 获取Skill实例
 	s, err := t.registry.Get(skillName)
 	if err != nil {
-		return tool.NewErrorResultWithMsg("SKILL_NOT_FOUND", fmt.Sprintf("技能不存在: %s", skillName)), nil
+		return t.errorResult("SKILL_NOT_FOUND", fmt.Sprintf("技能不存在: %s", skillName), map[string]any{
+			"skill_name":       skillName,
+			"available_skills": t.availableSkillNames(),
+		}), nil
 	}
 
 	// 创建执行上下文
@@ -204,11 +215,18 @@ func (t *SkillTool) Execute(ctx *tool.Context) (*tool.Result, error) {
 		output = t.handleInfo(s)
 
 	default:
-		return tool.NewErrorResultWithMsg("UNKNOWN_ACTION", fmt.Sprintf("未知操作: %s", action)), nil
+		return t.errorResult("UNKNOWN_ACTION", fmt.Sprintf("未知操作: %s", action), map[string]any{
+			"skill_name": skillName,
+			"action":     action,
+		}), nil
 	}
 
 	if err != nil {
-		return tool.NewErrorResultWithMsg("EXECUTE_ERROR", err.Error()), nil
+		return t.errorResult("EXECUTE_ERROR", err.Error(), map[string]any{
+			"skill_name": skillName,
+			"action":     action,
+			"params":     params,
+		}), nil
 	}
 
 	// 返回成功结果
@@ -298,9 +316,18 @@ func (t *SkillTool) handleLoadAssets(execCtx *skill.ExecutionContext, params map
 //   - string: 脚本执行输出
 //   - error: 执行错误
 func (t *SkillTool) handleExecuteScript(execCtx *skill.ExecutionContext, params map[string]any) (string, error) {
-	script, ok := params["script"].(string)
-	if !ok || script == "" {
-		return "", fmt.Errorf("缺少参数script")
+	if params == nil {
+		params = map[string]any{}
+	}
+
+	script, _ := params["script"].(string)
+	script = strings.TrimSpace(script)
+	if script == "" {
+		defaultScript, err := t.resolveDefaultScript(execCtx)
+		if err != nil {
+			return "", err
+		}
+		script = defaultScript
 	}
 
 	// 获取脚本参数
@@ -323,12 +350,217 @@ func (t *SkillTool) handleExecuteScript(execCtx *skill.ExecutionContext, params 
 		}
 	}
 
+	scriptPath, err := t.resolveScriptPath(execCtx, script)
+	if err != nil {
+		return "", err
+	}
+
+	if t.canRunWithScriptRunner(scriptPath) {
+		return t.executeScriptWithRunner(execCtx, scriptPath, args, params)
+	}
+
 	output, err := t.executor.ExecuteScript(execCtx, script, args...)
 	if err != nil {
 		return "", fmt.Errorf("执行脚本失败: %w", err)
 	}
 
 	return output, nil
+}
+
+func (t *SkillTool) resolveDefaultScript(execCtx *skill.ExecutionContext) (string, error) {
+	scripts, err := execCtx.Skill.ListScripts()
+	if err != nil {
+		return "", fmt.Errorf("列出脚本失败: %w", err)
+	}
+	if len(scripts) == 0 {
+		return "", fmt.Errorf("该技能没有可执行脚本，请改用load_instructions读取技能指令")
+	}
+	if len(scripts) > 1 {
+		names := make([]string, 0, len(scripts))
+		for _, script := range scripts {
+			names = append(names, filepath.Base(script))
+		}
+		return "", fmt.Errorf("该技能包含多个脚本，请在params.script中指定要执行的脚本: %s", strings.Join(names, ", "))
+	}
+	return filepath.Base(scripts[0]), nil
+}
+
+func (t *SkillTool) resolveScriptPath(execCtx *skill.ExecutionContext, scriptName string) (string, error) {
+	scripts, err := execCtx.Skill.ListScripts()
+	if err != nil {
+		return "", fmt.Errorf("列出脚本失败: %w", err)
+	}
+	for _, script := range scripts {
+		if strings.HasSuffix(script, scriptName) || filepath.Base(script) == scriptName || filepath.Base(script) == filepath.Base(scriptName) {
+			return script, nil
+		}
+	}
+	return "", fmt.Errorf("未找到脚本: %s", scriptName)
+}
+
+func (t *SkillTool) canRunWithScriptRunner(scriptPath string) bool {
+	ext := strings.ToLower(filepath.Ext(scriptPath))
+	return ext == ".py"
+}
+
+func (t *SkillTool) executeScriptWithRunner(execCtx *skill.ExecutionContext, scriptPath string, args []string, params map[string]any) (string, error) {
+	if t.scriptRunner == nil {
+		return "", fmt.Errorf("Donk脚本执行器未初始化")
+	}
+	code, err := os.ReadFile(scriptPath)
+	if err != nil {
+		return "", fmt.Errorf("读取脚本失败 %s: %w", filepath.Base(scriptPath), err)
+	}
+	language, err := skillScriptLanguage(scriptPath)
+	if err != nil {
+		return "", err
+	}
+	stdin := strings.Join(args, "\n")
+	if explicitStdin := stringParam(params["stdin"]); explicitStdin != "" {
+		stdin = explicitStdin
+	}
+	codeText := t.prepareScriptRunnerCode(string(code), scriptPath, args)
+	runnerParams := map[string]any{
+		"language":        language,
+		"code":            codeText,
+		"runtime_version": t.resolveSkillRuntimeVersion(execCtx.Skill, scriptPath, params),
+		"timeout":         params["timeout"],
+		"stdin":           stdin,
+		"env":             t.resolveSkillScriptEnv(language, params),
+	}
+	runnerCtx := tool.NewContext(t.scriptRunner.Name(), runnerParams)
+	result, err := t.scriptRunner.Execute(runnerCtx)
+	if err != nil {
+		return "", err
+	}
+	if result == nil {
+		return "", fmt.Errorf("脚本执行器无返回结果")
+	}
+	output := formatScriptRunnerResult(result.Data)
+	if !result.Success || scriptRunnerDataFailed(result.Data) {
+		return "", fmt.Errorf("脚本执行失败: script=%s output=%s", filepath.Base(scriptPath), output)
+	}
+	return output, nil
+}
+
+func (t *SkillTool) resolveSkillScriptEnv(language string, params map[string]any) map[string]string {
+	env := stringMapParam(params["env"])
+	if language == "python" {
+		env["PYTHONIOENCODING"] = "utf-8"
+		env["PYTHONUTF8"] = "1"
+	}
+	return env
+}
+
+func (t *SkillTool) prepareScriptRunnerCode(code, scriptPath string, args []string) string {
+	ext := strings.ToLower(filepath.Ext(scriptPath))
+	if len(args) == 0 {
+		return code
+	}
+	encodedArgs, err := json.Marshal(args)
+	if err != nil {
+		return code
+	}
+	switch ext {
+	case ".py":
+		return "import sys\nsys.argv = [" + strconv.Quote(filepath.Base(scriptPath)) + "] + " + string(encodedArgs) + "\n" + code
+	default:
+		return code
+	}
+}
+
+func (t *SkillTool) resolveSkillRuntimeVersion(s *skill.Skill, scriptPath string, params map[string]any) string {
+	if version := strings.TrimSpace(stringParam(params["runtime_version"])); version != "" {
+		return version
+	}
+	return s.ScriptConfig(filepath.Base(scriptPath)).RuntimeVersion
+}
+
+func skillScriptLanguage(scriptPath string) (string, error) {
+	switch strings.ToLower(filepath.Ext(scriptPath)) {
+	case ".py":
+		return "python", nil
+	default:
+		return "", fmt.Errorf("不支持Donk脚本执行器执行的脚本类型: %s", filepath.Ext(scriptPath))
+	}
+}
+
+func (t *SkillTool) errorResult(errorType, message string, details map[string]any) *tool.Result {
+	data := map[string]any{
+		"status":     "failed",
+		"success":    false,
+		"error_type": errorType,
+		"message":    message,
+	}
+	if details != nil {
+		data["details"] = details
+	}
+	return tool.NewErrorResultWithMsg(errorType, message, data)
+}
+
+func (t *SkillTool) availableSkillNames() []string {
+	skills := t.registry.List()
+	names := make([]string, 0, len(skills))
+	for _, s := range skills {
+		names = append(names, s.Name())
+	}
+	sort.Strings(names)
+	return names
+}
+
+func scriptRunnerDataFailed(data any) bool {
+	result, ok := data.(map[string]interface{})
+	if !ok {
+		return false
+	}
+	success, ok := result["success"].(bool)
+	return ok && !success
+}
+
+func formatScriptRunnerResult(data any) string {
+	result, ok := data.(map[string]interface{})
+	if !ok {
+		return fmt.Sprintf("%v", data)
+	}
+	stdout := stringParam(result["stdout"])
+	stderr := stringParam(result["stderr"])
+	if success, _ := result["success"].(bool); !success {
+		parts := []string{}
+		if message := stringParam(result["message"]); message != "" {
+			parts = append(parts, message)
+		}
+		if errorType := stringParam(result["error_type"]); errorType != "" {
+			parts = append(parts, "错误类型: "+errorType)
+		}
+		if status := stringParam(result["status"]); status != "" {
+			parts = append(parts, "状态: "+status)
+		}
+		if stderr != "" {
+			parts = append(parts, "stderr: "+stderr)
+		}
+		if stdout != "" {
+			parts = append(parts, "stdout: "+stdout)
+		}
+		if details, ok := result["details"]; ok && details != nil {
+			parts = append(parts, fmt.Sprintf("details: %v", details))
+		}
+		if len(parts) == 0 {
+			return fmt.Sprintf("执行失败: %v", data)
+		}
+		return "执行失败: " + strings.Join(parts, "；")
+	}
+	if stderr != "" {
+		return strings.TrimSpace(stdout + "\n" + stderr)
+	}
+	return stdout
+}
+
+func stringParamDefault(value interface{}, defaultValue string) string {
+	valueString := stringParam(value)
+	if valueString == "" {
+		return defaultValue
+	}
+	return valueString
 }
 
 // handleInfo 处理获取元信息操作

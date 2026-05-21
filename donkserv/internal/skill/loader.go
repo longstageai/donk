@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 )
 
 // SkillLoader Skill加载器
@@ -109,14 +110,12 @@ func (l *SkillLoader) Load() ([]*Skill, error) {
 //   - *Skill: 加载的Skill
 //   - error: 加载错误
 func (l *SkillLoader) LoadByName(name string) (*Skill, error) {
-	skills, err := l.Load()
-	if err != nil {
-		return nil, err
-	}
-
-	for _, skill := range skills {
-		if skill.Name() == name {
-			return skill, nil
+	for _, rootDir := range l.skillDirs {
+		skillDir := filepath.Join(rootDir, name)
+		if _, err := os.Stat(filepath.Join(skillDir, "SKILL.md")); err == nil {
+			return l.LoadFromDir(skillDir)
+		} else if err != nil && !os.IsNotExist(err) {
+			return nil, fmt.Errorf("访问Skill失败 %s: %w", name, err)
 		}
 	}
 
@@ -139,7 +138,7 @@ func (l *SkillLoader) scanSkillDirs(rootDir string) ([]string, error) {
 	}
 
 	for _, entry := range entries {
-		if !entry.IsDir() {
+		if !entry.IsDir() || !isValidSkillName(entry.Name()) {
 			continue
 		}
 
@@ -150,6 +149,7 @@ func (l *SkillLoader) scanSkillDirs(rootDir string) ([]string, error) {
 		}
 	}
 
+	sort.Strings(dirs)
 	return dirs, nil
 }
 

@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"gopkg.in/yaml.v3"
 )
+
+var skillNamePattern = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{0,63}$`)
 
 // SkillParser Skill解析器
 // 负责解析SKILL.md文件，提取元数据和指令
@@ -62,12 +65,37 @@ func (p *SkillParser) Parse(filePath, baseDir string) (*Skill, error) {
 	skill.SetInstructions(instructions)
 	skill.SetBaseDir(baseDir)
 
-	// 如果frontmatter中没有name，使用目录名
-	if skill.metadata.Name == "" {
-		skill.metadata.Name = dirName
+	if err := validateParsedSkillMetadata(metadata, dirName); err != nil {
+		return nil, err
 	}
 
 	return skill, nil
+}
+
+func validateParsedSkillMetadata(metadata Metadata, dirName string) error {
+	if metadata.Name == "" {
+		return fmt.Errorf("SKILL.md frontmatter缺少必需字段name")
+	}
+	if metadata.Description == "" {
+		return fmt.Errorf("SKILL.md frontmatter缺少必需字段description")
+	}
+	if !isValidSkillName(metadata.Name) {
+		return fmt.Errorf("Skill name不符合Open Agent Skills规范: %s", metadata.Name)
+	}
+	if metadata.Name != dirName {
+		return fmt.Errorf("Skill name必须与父目录名称一致: name=%s dir=%s", metadata.Name, dirName)
+	}
+	if len([]rune(metadata.Description)) > 1024 {
+		return fmt.Errorf("Skill description不能超过1024字符: %s", metadata.Name)
+	}
+	if metadata.Compatibility != "" && len([]rune(metadata.Compatibility)) > 500 {
+		return fmt.Errorf("Skill compatibility不能超过500字符: %s", metadata.Name)
+	}
+	return nil
+}
+
+func isValidSkillName(name string) bool {
+	return len([]rune(name)) >= 1 && len([]rune(name)) <= 64 && skillNamePattern.MatchString(name) && !strings.HasSuffix(name, "-") && !strings.Contains(name, "--")
 }
 
 // extractFrontmatter 从markdown内容中提取YAML frontmatter
@@ -84,8 +112,7 @@ func (p *SkillParser) extractFrontmatter(content string) (string, string, error)
 
 	// 检查是否以---开头
 	if len(lines) < 3 || strings.TrimSpace(lines[0]) != "---" {
-		// 没有frontmatter，直接返回整个内容
-		return "", content, nil
+		return "", "", fmt.Errorf("SKILL.md必须包含YAML frontmatter")
 	}
 
 	// 找到结束分隔符
@@ -109,6 +136,10 @@ func (p *SkillParser) extractFrontmatter(content string) (string, string, error)
 		} else {
 			mdLines = append(mdLines, line)
 		}
+	}
+
+	if !yamlEndFound {
+		return "", "", fmt.Errorf("frontmatter缺少结束分隔符---")
 	}
 
 	yamlContent := strings.TrimSpace(strings.Join(yamlLines, "\n"))
@@ -141,14 +172,14 @@ func (p *SkillParser) parseMetadata(yamlContent string) (Metadata, RuntimeConfig
 	metadata := Metadata{
 		Name:                   getString(data, "name"),
 		Description:            getString(data, "description"),
-		Version:                getStringDefault(data, "version", "1.0.0"),
+		Version:                getString(data, "version"),
 		Author:                 getString(data, "author"),
 		Homepage:               getString(data, "homepage"),
 		Tags:                   getStringSlice(data, "tags"),
 		ArgumentHint:           getString(data, "argument-hint"),
 		DisableModelInvocation: getBool(data, "disable-model-invocation", false),
 		UserInvocable:          getBool(data, "user-invocable", true),
-		AllowedTools:           getStringSlice(data, "allowed-tools"),
+		AllowedTools:           getSpaceSeparatedStringSlice(data, "allowed-tools"),
 		License:                getString(data, "license"),
 		Compatibility:          getString(data, "compatibility"),
 	}
@@ -162,11 +193,16 @@ func (p *SkillParser) parseMetadata(yamlContent string) (Metadata, RuntimeConfig
 			}
 		}
 	}
+	metadata.Version = metadataValueDefault(metadata.Metadata, "version", metadata.Version)
+	metadata.Author = metadataValueDefault(metadata.Metadata, "author", metadata.Author)
+	metadata.Homepage = metadataValueDefault(metadata.Metadata, "homepage", metadata.Homepage)
 
 	// 解析runtime配置
 	runtime := RuntimeConfig{
-		Requires: getStringSlice(data, "requires"),
-		Examples: getStringSlice(data, "examples"),
+		Requires:           getStringSlice(data, "requires"),
+		Examples:           getStringSlice(data, "examples"),
+		ScriptDependencies: getStringSliceMap(data, "script-dependencies"),
+		Scripts:            getScriptRuntimeConfigMap(data, "scripts"),
 	}
 
 	return metadata, runtime, nil
@@ -248,20 +284,83 @@ func getStringDefault(data map[string]interface{}, key, defaultValue string) str
 	return defaultValue
 }
 
+func metadataValueDefault(metadata map[string]string, key, defaultValue string) string {
+	if metadata == nil {
+		return defaultValue
+	}
+	if value := metadata[key]; value != "" {
+		return value
+	}
+	return defaultValue
+}
+
 // 辅助函数：获取字符串数组
 func getStringSlice(data map[string]interface{}, key string) []string {
 	if v, ok := data[key]; ok {
-		if slice, ok := v.([]interface{}); ok {
-			result := make([]string, 0, len(slice))
-			for _, item := range slice {
-				if s, ok := item.(string); ok {
-					result = append(result, s)
-				}
-			}
-			return result
-		}
+		return toStringSlice(v)
 	}
 	return nil
+}
+
+func getSpaceSeparatedStringSlice(data map[string]interface{}, key string) []string {
+	if v, ok := data[key]; ok {
+		if s, ok := v.(string); ok {
+			return strings.Fields(s)
+		}
+		return toStringSlice(v)
+	}
+	return nil
+}
+
+func toStringSlice(value interface{}) []string {
+	slice, ok := value.([]interface{})
+	if !ok {
+		return nil
+	}
+	result := make([]string, 0, len(slice))
+	for _, item := range slice {
+		if s, ok := item.(string); ok {
+			result = append(result, s)
+		}
+	}
+	return result
+}
+
+func getStringSliceMap(data map[string]interface{}, key string) map[string][]string {
+	value, ok := data[key].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	result := map[string][]string{}
+	for k, v := range value {
+		items := toStringSlice(v)
+		if len(items) > 0 {
+			result[k] = items
+		}
+	}
+	return result
+}
+
+func getScriptRuntimeConfigMap(data map[string]interface{}, key string) map[string]ScriptRuntimeConfig {
+	value, ok := data[key].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	result := map[string]ScriptRuntimeConfig{}
+	for name, raw := range value {
+		item, ok := raw.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		config := ScriptRuntimeConfig{
+			Language:         getString(item, "language"),
+			Dependencies:     getStringSlice(item, "dependencies"),
+			DependencyPolicy: getStringDefault(item, "dependency-policy", ""),
+			RuntimeVersion:   getString(item, "runtime-version"),
+		}
+		result[name] = config
+	}
+	return result
 }
 
 // 辅助函数：获取布尔值

@@ -16,30 +16,8 @@ class AppMenu extends StatefulWidget {
   State<AppMenu> createState() => _AppMenuState();
 }
 
-class _AppMenuState extends State<AppMenu> with SingleTickerProviderStateMixin {
+class _AppMenuState extends State<AppMenu> {
   int selectedIndex = 0;
-  late AnimationController _rotationController;
-  late Animation<double> _rotationAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _rotationController = AnimationController(
-      duration: const Duration(seconds: 300),
-      vsync: this,
-    );
-    _rotationAnimation = Tween<double>(
-      begin: 0,
-      end: 2 * 3.141592653589793,
-    ).animate(_rotationController);
-    _rotationController.repeat();
-  }
-
-  @override
-  void dispose() {
-    _rotationController.dispose();
-    super.dispose();
-  }
 
   @override
   void didChangeDependencies() {
@@ -81,34 +59,6 @@ class _AppMenuState extends State<AppMenu> with SingleTickerProviderStateMixin {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            // 旋转的边框动画
-            AnimatedBuilder(
-              animation: _rotationAnimation,
-              builder: (context, child) {
-                return Transform.rotate(
-                  angle: _rotationAnimation.value,
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const SweepGradient(
-                        colors: [
-                          Colors.blue,
-                          Colors.purple,
-                          Colors.pink,
-                          Colors.orange,
-                          Colors.yellow,
-                          Colors.green,
-                          Colors.blue,
-                        ],
-                        stops: [0.0, 0.15, 0.3, 0.45, 0.6, 0.75, 1.0],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
             // 头像主体
             Container(
               width: 48,

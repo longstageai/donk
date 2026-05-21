@@ -45,17 +45,14 @@ func NewSkillRegistryWithLoader(loader *SkillLoader) *SkillRegistry {
 // 参数:
 //   - skill: Skill实例
 func (r *SkillRegistry) Register(skill *Skill) error {
+	if skill == nil {
+		return fmt.Errorf("Skill不能为空")
+	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	// 检查Skill是否已存在
-	if _, exists := r.skills[skill.Name()]; exists {
-		return fmt.Errorf("Skill已存在: %s", skill.Name())
-	}
-
-	// 注册Skill
 	r.skills[skill.Name()] = skill
-
 	return nil
 }
 

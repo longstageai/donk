@@ -3,6 +3,7 @@ package context
 import (
 	"context"
 	"fmt"
+	"github.com/longstageai/donk/donk/internal/skill"
 	"reflect"
 	"sync"
 	"time"
@@ -25,22 +26,27 @@ type beanOption struct {
 // Application 应用程序上下文
 // 整合配置加载、日志初始化、IOC容器管理、优雅退出等功能
 type Application struct {
-	mu          sync.RWMutex           // 读写锁，保证并发安全
-	config      *config.Config         // 配置管理器
-	logger      *logger.Logger         // 日志记录器
-	container   ioc.ApplicationContext // IOC容器
-	runner      *graceful.Runner       // 任务运行器，管理后台任务和优雅退出
-	appName     string                 // 应用名称
-	version     string                 // 应用版本
-	env         string                 // 应用环境 (development/test/production)
-	configPaths []string               // 配置文件路径列表
-	conf        configs.Conf           // 配置绑定对象
-	beans       []beanOption           // 待注册的Bean列表
-	startTime   time.Time              // 启动时间
-	initialized bool                   // 是否已初始化
-	stopped     bool                   // 是否已停止
-	stopCh      chan struct{}          // 停止通道
-	wg          sync.WaitGroup         // 等待组，用于等待goroutine完成
+	mu            sync.RWMutex           // 读写锁，保证并发安全
+	config        *config.Config         // 配置管理器
+	logger        *logger.Logger         // 日志记录器
+	container     ioc.ApplicationContext // IOC容器
+	runner        *graceful.Runner       // 任务运行器，管理后台任务和优雅退出
+	appName       string                 // 应用名称
+	version       string                 // 应用版本
+	env           string                 // 应用环境 (development/test/production)
+	configPaths   []string               // 配置文件路径列表
+	conf          configs.Conf           // 配置绑定对象
+	beans         []beanOption           // 待注册的Bean列表
+	startTime     time.Time              // 启动时间
+	initialized   bool                   // 是否已初始化
+	stopped       bool                   // 是否已停止
+	stopCh        chan struct{}          // 停止通道
+	wg            sync.WaitGroup         // 等待组，用于等待goroutine完成
+	SkillRegistry *skill.SkillRegistry
+}
+
+func (a *Application) SetSkillRegistry(skillRegistry *skill.SkillRegistry) {
+	a.SkillRegistry = skillRegistry
 }
 
 // Config 获取配置对象

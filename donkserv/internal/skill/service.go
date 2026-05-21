@@ -4,22 +4,24 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 // SkillInfo Skill 信息（用于列表和详情展示）
 type SkillInfo struct {
-	Name                   string   `json:"name"`                     // Skill 名称
-	Description            string   `json:"description"`              // 描述
-	Version                string   `json:"version"`                  // 版本
-	Author                 string   `json:"author"`                   // 作者
-	Tags                   []string `json:"tags"`                     // 标签列表
-	Enabled                bool     `json:"enabled"`                  // 是否启用
-	UserInvocable          bool     `json:"user_invocable"`           // 是否允许用户调用
-	DisableModelInvocation bool     `json:"disable_model_invocation"` // 是否禁用自动触发
-	Path                   string   `json:"path"`                     // 文件路径
-	HasScripts             bool     `json:"has_scripts"`              // 是否有脚本目录
-	HasReferences          bool     `json:"has_references"`           // 是否有参考资料目录
-	HasAssets              bool     `json:"has_assets"`               // 是否有资源目录
+	Name                   string    `json:"name"`                     // Skill 名称
+	Description            string    `json:"description"`              // 描述
+	Version                string    `json:"version"`                  // 版本
+	Author                 string    `json:"author"`                   // 作者
+	Tags                   []string  `json:"tags"`                     // 标签列表
+	Enabled                bool      `json:"enabled"`                  // 是否启用
+	UserInvocable          bool      `json:"user_invocable"`           // 是否允许用户调用
+	DisableModelInvocation bool      `json:"disable_model_invocation"` // 是否禁用自动触发
+	Path                   string    `json:"path"`                     // 文件路径
+	HasScripts             bool      `json:"has_scripts"`              // 是否有脚本目录
+	HasReferences          bool      `json:"has_references"`           // 是否有参考资料目录
+	HasAssets              bool      `json:"has_assets"`               // 是否有资源目录
+	CreatedAt              time.Time `json:"created_at"`               // 创建时间
 }
 
 // Service Skill 业务逻辑层
@@ -241,6 +243,7 @@ func (s *Service) buildSkillInfo(skill *Skill, state *SkillState) *SkillInfo {
 		HasScripts:             skill.HasScripts(),
 		HasReferences:          skill.HasReferences(),
 		HasAssets:              skill.HasAssets(),
+		CreatedAt:              state.CreatedAt,
 	}
 }
 

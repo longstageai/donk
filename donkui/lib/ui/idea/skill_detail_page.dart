@@ -64,7 +64,7 @@ class _SkillDetailPageState extends State<SkillDetailPage> {
     }
     return p.join(
       Directory.current.path,
-      'donkserv',
+      'server',
       _skill.path,
     );
   }

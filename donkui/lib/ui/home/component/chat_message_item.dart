@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:donk/common/util/color_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path/path.dart' as p;
 
 import '../../../common/model/chat_message.dart';
 
@@ -84,13 +88,23 @@ class _ChatMessageItemState extends State<ChatMessageItem> {
                   color: ColorUtil.fromHex('#e6e8eb'),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(
-                  widget.message.content,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.black87,
-                    height: 1.5,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (widget.message.hasFile) ...[
+                      _buildUserFileCard(),
+                      const SizedBox(height: 8),
+                    ],
+                    Text(
+                      widget.message.content,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -98,6 +112,97 @@ class _ChatMessageItemState extends State<ChatMessageItem> {
         ),
       ),
     );
+  }
+
+  Widget _buildUserFileCard() {
+    final filePath = widget.message.filePath!;
+    final fileType = widget.message.fileType?.toUpperCase() ?? 'FILE';
+    final fileName = p.basename(filePath);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _openFile(filePath),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 320),
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.7),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: ColorUtil.fromHex('#d4d8dd')),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: ColorUtil.fromHex('#f3f4f5'),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.insert_drive_file_outlined,
+                  size: 18,
+                  color: ColorUtil.fromHex('#5e6267'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      fileName,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Tooltip(
+                      message: filePath,
+                      child: Text(
+                        '$fileType · $filePath',
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: ColorUtil.fromHex('#8a8f94'),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.open_in_new,
+                size: 14,
+                color: ColorUtil.fromHex('#8a8f94'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openFile(String filePath) async {
+    if (!await File(filePath).exists()) {
+      _showToast('文件不存在');
+      return;
+    }
+
+    final result = await OpenFilex.open(filePath);
+    if (result.type != ResultType.done) {
+      _showToast(result.message.isEmpty ? '打开文件失败' : result.message);
+    }
   }
 
   /// 处理复制操作

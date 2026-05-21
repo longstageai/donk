@@ -36,9 +36,6 @@ func NewHub() *Hub {
 // Run 是 Hub 的主事件循环，运行在一个独立的 goroutine 中
 // 通过 select 语句监听：注册、注销、广播、退出
 func (h *Hub) Run() {
-	logger.Info("WebSocket Hub 已启动", map[string]interface{}{
-		"addr": "ws://0.0.0.0:8081/ws/tasks",
-	})
 
 	for {
 		select {

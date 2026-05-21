@@ -103,7 +103,6 @@ func (r *StateRepository) Save(name, description string, enabled bool) error {
 		VALUES (?, ?, ?, datetime('now'), datetime('now'))
 		ON CONFLICT(name) DO UPDATE SET
 			description = excluded.description,
-			enabled = excluded.enabled,
 			updated_at = datetime('now')
 	`
 	_, err := r.db.Exec(query, name, description, enabled)
@@ -178,16 +177,28 @@ func (r *StateRepository) SyncFromLoader(loader *SkillLoader) error {
 	}
 
 	// 插入或更新
+	loadedNames := make(map[string]bool)
 	for _, skill := range skills {
-		if existingNames[skill.Name()] {
+		name := skill.Name()
+		loadedNames[name] = true
+		if existingNames[name] {
 			// 已存在，只更新描述
-			if err := r.updateDescription(skill.Name(), skill.Description()); err != nil {
-				return fmt.Errorf("更新 Skill 描述失败 %s: %w", skill.Name(), err)
+			if err := r.updateDescription(name, skill.Description()); err != nil {
+				return fmt.Errorf("更新 Skill 描述失败 %s: %w", name, err)
 			}
 		} else {
 			// 不存在，插入新记录（默认启用）
-			if err := r.Save(skill.Name(), skill.Description(), true); err != nil {
-				return fmt.Errorf("保存 Skill 状态失败 %s: %w", skill.Name(), err)
+			if err := r.Save(name, skill.Description(), true); err != nil {
+				return fmt.Errorf("保存 Skill 状态失败 %s: %w", name, err)
+			}
+		}
+	}
+
+	// 删除数据库中存在但磁盘中已不存在或缺少 SKILL.md 的记录
+	for _, state := range states {
+		if !loadedNames[state.Name] {
+			if err := r.Delete(state.Name); err != nil {
+				return fmt.Errorf("删除不存在的 Skill 状态失败 %s: %w", state.Name, err)
 			}
 		}
 	}

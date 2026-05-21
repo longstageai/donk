@@ -17,6 +17,7 @@ type Watcher struct {
 	watcher    *fsnotify.Watcher
 	loader     *SkillLoader
 	repo       *StateRepository
+	registry   *SkillRegistry
 	skillDir   string
 	stopCh     chan struct{}
 	syncTimers map[string]*time.Timer
@@ -28,11 +29,12 @@ type Watcher struct {
 //   - skillDir: Skill 根目录
 //   - loader: Skill 加载器
 //   - repo: 状态仓库
+//   - registry: Skill 注册表（可选）
 //
 // 返回:
 //   - *Watcher: 监听器实例
 //   - error: 创建错误
-func NewWatcher(skillDir string, loader *SkillLoader, repo *StateRepository) (*Watcher, error) {
+func NewWatcher(skillDir string, loader *SkillLoader, repo *StateRepository, registry *SkillRegistry) (*Watcher, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err
@@ -42,6 +44,7 @@ func NewWatcher(skillDir string, loader *SkillLoader, repo *StateRepository) (*W
 		watcher:    watcher,
 		loader:     loader,
 		repo:       repo,
+		registry:   registry,
 		skillDir:   skillDir,
 		stopCh:     make(chan struct{}),
 		syncTimers: make(map[string]*time.Timer),
@@ -148,6 +151,11 @@ func (w *Watcher) handleEvent(event fsnotify.Event) {
 
 // handleWrite 处理文件修改（带防抖）
 func (w *Watcher) handleWrite(path, skillName string) {
+	// 忽略以 . 开头的隐藏目录（如安装器的临时目录 .install-xxx）
+	if strings.HasPrefix(skillName, ".") {
+		return
+	}
+
 	// 只关注 SKILL.md 的修改
 	if filepath.Base(path) != "SKILL.md" {
 		return
@@ -161,6 +169,11 @@ func (w *Watcher) handleWrite(path, skillName string) {
 
 // handleCreate 处理创建事件（带防抖）
 func (w *Watcher) handleCreate(path, skillName string) {
+	// 忽略以 . 开头的隐藏目录（如安装器的临时目录 .install-xxx）
+	if strings.HasPrefix(skillName, ".") {
+		return
+	}
+
 	info, err := os.Stat(path)
 	if err != nil {
 		return
@@ -185,6 +198,10 @@ func (w *Watcher) handleCreate(path, skillName string) {
 // debounceSync 防抖同步
 // 等待 10 秒，期间如果同一 Skill 有新事件则重置定时器
 func (w *Watcher) debounceSync(skillName string) {
+	if !isValidSkillName(skillName) {
+		return
+	}
+
 	w.timersMu.Lock()
 	defer w.timersMu.Unlock()
 
@@ -210,6 +227,11 @@ func (w *Watcher) debounceSync(skillName string) {
 
 // handleRemove 处理删除事件（立即执行，不防抖）
 func (w *Watcher) handleRemove(path, skillName string) {
+	// 忽略以 . 开头的隐藏目录（如安装器的临时目录 .install-xxx）
+	if strings.HasPrefix(skillName, ".") {
+		return
+	}
+
 	// 检查是否是 Skill 目录被删除
 	if filepath.Dir(path) == w.skillDir {
 		logger.Infof("SkillWatcher Skill 被删除: %s", skillName)
@@ -233,7 +255,16 @@ func (w *Watcher) handleRemove(path, skillName string) {
 func (w *Watcher) syncSkill(name, dir string) {
 	// 检查 SKILL.md 是否存在
 	skillFile := filepath.Join(dir, "SKILL.md")
-	if _, err := os.Stat(skillFile); os.IsNotExist(err) {
+	if _, err := os.Stat(skillFile); err != nil {
+		if os.IsNotExist(err) {
+			if err := w.repo.Delete(name); err != nil {
+				logger.Error("SkillWatcher 删除缺失 Skill 记录失败", map[string]interface{}{"skill": name, "error": err.Error()})
+			} else {
+				logger.Infof("SkillWatcher 缺失 Skill 已从数据库删除: %s", name)
+			}
+			return
+		}
+		logger.Error("SkillWatcher 检查 SKILL.md 失败", map[string]interface{}{"skill": name, "error": err.Error()})
 		return
 	}
 
@@ -247,8 +278,17 @@ func (w *Watcher) syncSkill(name, dir string) {
 	// 保存到数据库
 	if err := w.repo.Save(skill.Name(), skill.Description(), true); err != nil {
 		logger.Error("SkillWatcher 同步 Skill 失败", map[string]interface{}{"skill": name, "error": err.Error()})
-	} else {
-		logger.Infof("SkillWatcher Skill 已同步: %s", name)
+		return
+	}
+	logger.Infof("SkillWatcher Skill 已同步: %s", name)
+
+	// 注册到 SkillRegistry（如果提供了 registry）
+	if w.registry != nil {
+		if err := w.registry.Register(skill); err != nil {
+			logger.Warn("SkillWatcher 注册 Skill 到 registry 失败", map[string]interface{}{"skill": name, "error": err.Error()})
+		} else {
+			logger.Infof("SkillWatcher Skill 已注册到 registry: %s", name)
+		}
 	}
 
 	// 添加子目录监听

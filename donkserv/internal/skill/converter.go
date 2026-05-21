@@ -223,7 +223,9 @@ func (c *SkillConverter) GetSkillInstructionsForAgent(skill *Skill, includeMetad
 
 	if includeMetadata {
 		sb.WriteString(fmt.Sprintf("### 技能: %s\n", skill.Name()))
-		sb.WriteString(fmt.Sprintf("版本: %s | 作者: %s\n", skill.Version(), skill.Author()))
+		if skill.Version() != "" || skill.Author() != "" {
+			sb.WriteString(fmt.Sprintf("版本: %s | 作者: %s\n", skill.Version(), skill.Author()))
+		}
 		sb.WriteString(fmt.Sprintf("描述: %s\n\n", skill.Description()))
 	} else {
 		sb.WriteString(fmt.Sprintf("## %s\n\n", skill.Name()))

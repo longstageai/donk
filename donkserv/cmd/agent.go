@@ -106,7 +106,7 @@ func (b *AgentBuilder) Build() *agent.Agent {
 	// 初始化工具注册表（无错误返回）
 	b.initTools()
 	// 初始化Skill系统（需要在initTools之后，因为需要toolRegistry）
-	b.initSkills()
+	b.initSkills(b.app)
 	// 初始化任务调度器工具（需要在initSkills之后）
 	b.initSchedulerTool()
 	// 初始化历史记录加载器（无错误返回）
@@ -309,7 +309,12 @@ func (b *AgentBuilder) initTools() {
 	registry.Register(builtin.NewWordParser())
 	registry.Register(builtin.NewOfficialSkillsSearch())
 	registry.Register(builtin.NewSkillInstaller(filepath.Join(b.workspace, "skills")))
+	registry.Register(builtin.NewSkillCreator(filepath.Join(b.workspace, "skills")))
 	registry.Register(builtin.NewCommandExecutor())
+	// 注册脚本执行工具和 Python 依赖管理工具，使用 Donk 预置 runtime，并将 run 数据放到 workspace 下。
+	scriptRuntimeDir := filepath.Join(b.workspace, "script_runtime")
+	registry.Register(builtin.NewScriptRunner(builtin.WithScriptRunnerBaseDir(scriptRuntimeDir)))
+	registry.Register(builtin.NewPythonDependencyManager(builtin.WithPythonDependencyManagerBaseDir(scriptRuntimeDir)))
 	//registry.Register(builtin.NewBrowserController())
 	registry.Register(builtin.NewMemorySaver(b.longMemory))
 	registry.Register(builtin.NewMemorySearcher(b.longMemory))
@@ -353,7 +358,7 @@ func (b *AgentBuilder) initTokenStats() {
 
 // initSkills 初始化Skill系统
 // 从数据库加载启用的Skill并注册到SkillRegistry
-func (b *AgentBuilder) initSkills() error {
+func (b *AgentBuilder) initSkills(app *appctx.Application) error {
 	skillDir := filepath.Join(b.workspace, "skills")
 	if _, err := os.Stat(skillDir); os.IsNotExist(err) {
 		logger.Info("Skill目录不存在，跳过初始化", map[string]interface{}{"dir": skillDir})
@@ -361,7 +366,7 @@ func (b *AgentBuilder) initSkills() error {
 	}
 
 	loader := skill.NewSkillLoader(skillDir)
-	registry := skill.NewSkillRegistryWithLoader(loader)
+	registry := app.SkillRegistry
 
 	// 从数据库获取启用的Skill列表
 	stateRepo := skill.NewStateRepository(b.db)
@@ -373,6 +378,25 @@ func (b *AgentBuilder) initSkills() error {
 			logger.Warn("加载Skill失败", map[string]interface{}{"error": err.Error()})
 			return err
 		}
+	} else if len(enabledStates) == 0 {
+		// 数据库中没有记录时，加载文件系统中的所有Skill并自动启用
+		logger.Info("数据库中无Skill记录，从文件系统加载所有Skill", nil)
+		allSkills, err := loader.Load()
+		if err != nil {
+			logger.Warn("从文件系统加载Skill失败", map[string]interface{}{"error": err.Error()})
+			return err
+		}
+		for _, s := range allSkills {
+			if err := registry.Register(s); err != nil {
+				logger.Warn("注册Skill失败", map[string]interface{}{"skill": s.Name(), "error": err.Error()})
+				continue
+			}
+			// 将Skill状态写入数据库，默认启用
+			if err := stateRepo.Save(s.Name(), s.Description(), true); err != nil {
+				logger.Warn("保存Skill状态到数据库失败", map[string]interface{}{"skill": s.Name(), "error": err.Error()})
+			}
+		}
+		logger.Info("从文件系统加载并启用所有Skill", map[string]interface{}{"count": len(registry.List())})
 	} else {
 		// 只加载数据库中启用的Skill
 		for _, state := range enabledStates {
@@ -593,6 +617,11 @@ func (b *TaskAgentBuilder) initTools() {
 	registry.Register(builtin.NewFileReader())
 	registry.Register(builtin.NewFileWriter())
 	registry.Register(builtin.NewCommandExecutor())
+	execPath, _ := os.Getwd()
+	// 注册脚本执行工具和 Python 依赖管理工具，轻量级 Agent 使用当前工作目录下的 data/script_runtime。
+	scriptRuntimeDir := filepath.Join(execPath, "data", "script_runtime")
+	registry.Register(builtin.NewScriptRunner(builtin.WithScriptRunnerBaseDir(scriptRuntimeDir)))
+	registry.Register(builtin.NewPythonDependencyManager(builtin.WithPythonDependencyManagerBaseDir(scriptRuntimeDir)))
 	//registry.Register(builtin.NewBrowserController())
 
 	// 注册中间件

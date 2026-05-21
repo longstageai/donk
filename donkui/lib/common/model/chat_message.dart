@@ -12,6 +12,9 @@ class ChatMessage {
   /// 消息时间戳
   final DateTime timestamp;
 
+  final String? filePath;
+  final String? fileType;
+
   /// 思考过程（Agent消息可选）
   final String? reasoning;
 
@@ -27,6 +30,8 @@ class ChatMessage {
     required this.sender,
     required this.content,
     required this.timestamp,
+    this.filePath,
+    this.fileType,
     this.reasoning,
     this.isReasoningCollapsed = true,
     this.isReasoning = false,
@@ -38,12 +43,16 @@ class ChatMessage {
     required String id,
     required String content,
     DateTime? timestamp,
+    String? filePath,
+    String? fileType,
   }) {
     return ChatMessage(
       id: id,
       sender: 'user',
       content: content,
       timestamp: timestamp ?? DateTime.now(),
+      filePath: filePath,
+      fileType: fileType,
     );
   }
 
@@ -77,6 +86,8 @@ class ChatMessage {
       sender: sender,
       content: content,
       timestamp: timestamp,
+      filePath: filePath,
+      fileType: fileType,
       reasoning: reasoning,
       isReasoningCollapsed: !isReasoningCollapsed,
       isReasoning: isReasoning,
@@ -91,6 +102,8 @@ class ChatMessage {
       sender: sender,
       content: content,
       timestamp: timestamp,
+      filePath: filePath,
+      fileType: fileType,
       reasoning: reasoning,
       isReasoningCollapsed: true, // 完成后默认折叠
       isReasoning: false,
@@ -100,6 +113,8 @@ class ChatMessage {
 
   /// 是否为Agent消息
   bool get isAgent => sender == 'agent';
+
+  bool get hasFile => filePath != null && filePath!.isNotEmpty;
 
   /// 是否为用户消息
   bool get isUser => sender == 'user';

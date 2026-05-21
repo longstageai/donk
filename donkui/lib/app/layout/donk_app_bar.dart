@@ -1,10 +1,10 @@
 import 'package:donk/app/conf/config.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../conf/colors.dart';
+import 'animated_avatar_border.dart';
 import 'layout_controller.dart';
 
 class DonkAppBar extends StatefulWidget implements PreferredSizeWidget {
@@ -50,6 +50,7 @@ class _DonkAppBarState extends State<DonkAppBar> {
             ),
           ),
           SizedBox(width: 14,),
+          logo()
         ],
       ),
     );
@@ -115,10 +116,7 @@ class _DonkAppBarState extends State<DonkAppBar> {
 
   Widget logo() {
     return Center(
-      child: LoadingAnimationWidget.discreteCircle(
-        color: Colors.white,
-        size: 20,
-      ),
+      child: AnimatedAvatarBorder(),
     );
   }
 

@@ -2,7 +2,9 @@ package http
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/longstageai/donk/donk/internal/agent"
@@ -17,7 +19,9 @@ import (
 // ChatRequest 聊天请求结构
 // 客户端发送的聊天请求消息体
 type ChatRequest struct {
-	Content string `json:"content" binding:"required"`
+	Content  string `json:"content" binding:"required"`
+	FilePath string `json:"file_path,omitempty"`
+	FileType string `json:"file_type,omitempty"`
 }
 
 // ChatHandler 聊天HTTP处理器
@@ -52,7 +56,11 @@ func (h *ChatHandler) HandleChat(c *gin.Context) {
 		return
 	}
 
-	logger.Info("收到聊天请求", map[string]interface{}{"content": req.Content})
+	logger.Info("收到聊天请求", map[string]interface{}{
+		"content":   req.Content,
+		"file_path": req.FilePath,
+		"file_type": req.FileType,
+	})
 
 	// 获取Agent实例
 	agentInstance, ok := h.getAgentInstance(c)
@@ -69,7 +77,7 @@ func (h *ChatHandler) HandleChat(c *gin.Context) {
 	timeout := h.getAgentTimeout()
 
 	// 执行Agent对话
-	h.executeAgentChat(c, agentInstance, req.Content, timeout)
+	h.executeAgentChat(c, agentInstance, req.AgentContent(), timeout)
 }
 
 // parseRequest 解析并验证聊天请求
@@ -87,12 +95,38 @@ func (h *ChatHandler) parseRequest(c *gin.Context) (ChatRequest, bool) {
 		return ChatRequest{}, false
 	}
 
+	req.Content = strings.TrimSpace(req.Content)
+	req.FilePath = strings.TrimSpace(req.FilePath)
+	req.FileType = strings.ToLower(strings.TrimSpace(req.FileType))
+
 	if req.Content == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "消息内容不能为空"})
 		return ChatRequest{}, false
 	}
 
+	if req.FilePath != "" && !isSupportedChatFileType(req.FileType) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "不支持的文件类型: " + req.FileType})
+		return ChatRequest{}, false
+	}
+
 	return req, true
+}
+
+func (r ChatRequest) AgentContent() string {
+	if r.FilePath == "" {
+		return r.Content
+	}
+
+	return fmt.Sprintf("文件类型：%s\n文件路径：%s\n需求：%s", r.FileType, r.FilePath, r.Content)
+}
+
+func isSupportedChatFileType(fileType string) bool {
+	switch fileType {
+	case "pdf", "docx", "txt", "md":
+		return true
+	default:
+		return false
+	}
 }
 
 // getAgentInstance 获取Agent实例

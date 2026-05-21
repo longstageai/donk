@@ -79,8 +79,12 @@ func LogMiddleware(config ...LogConfig) Middleware {
 						cfg.Prefix, time.Now().Format("2006-01-02 15:04:05"), ctx.ToolName, status, duration), nil)
 				}
 
-				if cfg.PrintResult && result != nil && result.Success && result.Data != nil {
-					logger.Info(fmt.Sprintf("%s 结果: %+v", cfg.Prefix, result.Data), nil)
+				if cfg.PrintResult && result != nil {
+					if result.Success && result.Data != nil {
+						logger.Info(fmt.Sprintf("%s 结果: %+v", cfg.Prefix, result.Data), nil)
+					} else if !result.Success && result.Error != nil {
+						logger.Warn(fmt.Sprintf("%s 错误: %s", cfg.Prefix, result.String()), nil)
+					}
 				}
 			}
 

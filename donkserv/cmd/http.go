@@ -23,7 +23,7 @@ import (
 //   - GET/PUT /api/v1/config/* (配置管理)
 func NewHttp(app *appctx.Application, db *sql.DB) (*http.Server, *gin.Engine, error) {
 	httpServer := http.New(
-		http.WithAddress("0.0.0.0:8080"),
+		http.WithAddress("0.0.0.0:65434"),
 		http.WithShutdownCallback(func() {
 			if err := db.Close(); err != nil {
 				logger.Error("数据库关闭失败", map[string]interface{}{"error": err.Error()})
@@ -61,7 +61,7 @@ func NewHttp(app *appctx.Application, db *sql.DB) (*http.Server, *gin.Engine, er
 	logger.Info("配置管理路由已注册: GET/PUT /api/v1/config/*", nil)
 
 	// 注册 Skill 管理路由
-	if err := setupSkillRoutes(db, engine); err != nil {
+	if err := setupSkillRoutes(app, db, engine); err != nil {
 		logger.Warn("Skill 管理路由注册失败", map[string]interface{}{"error": err.Error()})
 	} else {
 		logger.Info("Skill 管理路由已注册: /api/v1/skills/*", nil)
@@ -84,7 +84,7 @@ func NewHttp(app *appctx.Application, db *sql.DB) (*http.Server, *gin.Engine, er
 //
 // 返回:
 //   - error: 设置错误
-func setupSkillRoutes(db *sql.DB, engine *gin.Engine) error {
+func setupSkillRoutes(app *appctx.Application, db *sql.DB, engine *gin.Engine) error {
 	paths := config.GetDataPaths()
 	skillDir := filepath.Join(paths.DataDir, "skills")
 
@@ -100,7 +100,10 @@ func setupSkillRoutes(db *sql.DB, engine *gin.Engine) error {
 	}
 
 	// 创建 Registry，只加载启用的 Skill
-	registry := skill.NewSkillRegistry()
+	//registry := skill.NewSkillRegistry()
+	registry := skill.NewSkillRegistryWithLoader(loader)
+	app.SetSkillRegistry(registry)
+
 	skills, _ := loader.Load()
 	for _, s := range skills {
 		if state, _ := stateRepo.Get(s.Name()); state == nil || state.Enabled {
@@ -116,7 +119,7 @@ func setupSkillRoutes(db *sql.DB, engine *gin.Engine) error {
 	handler.RegisterRoutes(engine)
 
 	// 启动文件监听（默认开启）
-	watcher, err := skill.NewWatcher(skillDir, loader, stateRepo)
+	watcher, err := skill.NewWatcher(skillDir, loader, stateRepo, registry)
 	if err != nil {
 		logger.Warn("Skill 文件监听创建失败", map[string]interface{}{"error": err.Error()})
 	} else {

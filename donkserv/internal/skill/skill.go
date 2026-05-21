@@ -6,28 +6,36 @@ import (
 	"time"
 )
 
-// Metadata Skill元数据
-// 遵循 Claude Code / Open Agent Skills 规范
+// Metadata Skill元数据。name、description、license、compatibility、metadata、allowed-tools 是 Open Agent Skills 规范字段；其余字段为历史兼容或 Donk 扩展字段。
 type Metadata struct {
-	Name                   string            `yaml:"name"`                     // 技能名称（小写字母、数字、短横线，最多64字符）
-	Description            string            `yaml:"description"`              // 技能描述及使用时机
-	Version                string            `yaml:"version"`                  // 版本号
-	Author                 string            `yaml:"author"`                   // 作者
-	Homepage               string            `yaml:"homepage"`                 // 主页URL
-	Tags                   []string          `yaml:"tags"`                     // 标签（用于分类）
-	ArgumentHint           string            `yaml:"argument-hint"`            // 自动补全参数提示
-	DisableModelInvocation bool              `yaml:"disable-model-invocation"` // 禁止自动触发，仅能手动调用
-	UserInvocable          bool              `yaml:"user-invocable"`           // 是否可用户调用（斜杠命令）
-	AllowedTools           []string          `yaml:"allowed-tools"`            // 允许使用的工具列表
-	License                string            `yaml:"license"`                  // 许可证信息
-	Compatibility          string            `yaml:"compatibility"`            // 环境要求
-	Metadata               map[string]string `yaml:"metadata"`                 // 自定义键值对
+	Name                   string            `yaml:"name"`
+	Description            string            `yaml:"description"`
+	License                string            `yaml:"license"`
+	Compatibility          string            `yaml:"compatibility"`
+	Metadata               map[string]string `yaml:"metadata"`
+	AllowedTools           []string          `yaml:"allowed-tools"`
+	Version                string            `yaml:"version"`
+	Author                 string            `yaml:"author"`
+	Homepage               string            `yaml:"homepage"`
+	Tags                   []string          `yaml:"tags"`
+	ArgumentHint           string            `yaml:"argument-hint"`
+	DisableModelInvocation bool              `yaml:"disable-model-invocation"`
+	UserInvocable          bool              `yaml:"user-invocable"`
 }
 
-// RuntimeConfig Skill运行时配置
+// RuntimeConfig Skill运行时配置。Open Agent Skills 将可执行指令放在正文中，以下字段是 Donk 为脚本执行和历史 Skill 兼容保留的扩展配置。
 type RuntimeConfig struct {
-	Requires []string `yaml:"requires"` // 依赖的其他技能
-	Examples []string `yaml:"examples"` // 使用示例
+	Requires           []string                       `yaml:"requires"`
+	Examples           []string                       `yaml:"examples"`
+	ScriptDependencies map[string][]string            `yaml:"script-dependencies"`
+	Scripts            map[string]ScriptRuntimeConfig `yaml:"scripts"`
+}
+
+type ScriptRuntimeConfig struct {
+	Language         string   `yaml:"language"`
+	Dependencies     []string `yaml:"dependencies"`
+	DependencyPolicy string   `yaml:"dependency-policy"`
+	RuntimeVersion   string   `yaml:"runtime-version"`
 }
 
 // SkillDirs Skill包含的目录
@@ -60,11 +68,9 @@ func NewSkill(name, description string) *Skill {
 	return &Skill{
 		name: name,
 		metadata: Metadata{
-			Name:                   name,
-			Description:            description,
-			Version:                "1.0.0",
-			UserInvocable:          true,
-			DisableModelInvocation: false,
+			Name:          name,
+			Description:   description,
+			UserInvocable: true,
 		},
 		runtime: RuntimeConfig{},
 		dirs:    SkillDirs{},
@@ -102,7 +108,7 @@ func (s *Skill) Description() string {
 // 返回:
 //   - string: 版本号
 func (s *Skill) Version() string {
-	return s.metadata.Version
+	return s.metadataValue("version", s.metadata.Version)
 }
 
 // Author 获取作者
@@ -112,7 +118,7 @@ func (s *Skill) Version() string {
 // 返回:
 //   - string: 作者
 func (s *Skill) Author() string {
-	return s.metadata.Author
+	return s.metadataValue("author", s.metadata.Author)
 }
 
 // Homepage 获取主页URL
@@ -122,7 +128,7 @@ func (s *Skill) Author() string {
 // 返回:
 //   - string: 主页URL
 func (s *Skill) Homepage() string {
-	return s.metadata.Homepage
+	return s.metadataValue("homepage", s.metadata.Homepage)
 }
 
 // Tags 获取标签列表
@@ -212,10 +218,17 @@ func (s *Skill) CustomMetadata() map[string]string {
 // 返回:
 //   - string: 元数据值，如果不存在则返回空字符串
 func (s *Skill) GetCustomMetadata(key string) string {
+	return s.metadataValue(key, "")
+}
+
+func (s *Skill) metadataValue(key, fallback string) string {
 	if s.metadata.Metadata == nil {
-		return ""
+		return fallback
 	}
-	return s.metadata.Metadata[key]
+	if value := s.metadata.Metadata[key]; value != "" {
+		return value
+	}
+	return fallback
 }
 
 // Requires 获取依赖列表
@@ -236,6 +249,32 @@ func (s *Skill) Requires() []string {
 //   - []string: 使用示例列表
 func (s *Skill) Examples() []string {
 	return s.runtime.Examples
+}
+
+func (s *Skill) ScriptDependencies(language string) []string {
+	if s.runtime.ScriptDependencies == nil {
+		return nil
+	}
+	return s.runtime.ScriptDependencies[language]
+}
+
+func (s *Skill) ScriptConfig(scriptName string) ScriptRuntimeConfig {
+	if s.runtime.Scripts == nil {
+		return ScriptRuntimeConfig{}
+	}
+	if config, ok := s.runtime.Scripts[scriptName]; ok {
+		return config
+	}
+	baseName := filepath.Base(scriptName)
+	if config, ok := s.runtime.Scripts[baseName]; ok {
+		return config
+	}
+	for name, config := range s.runtime.Scripts {
+		if filepath.Base(name) == baseName {
+			return config
+		}
+	}
+	return ScriptRuntimeConfig{}
 }
 
 // Instructions 获取核心指令
@@ -429,9 +468,16 @@ func (s *Skill) listDirFiles(dirType string) ([]string, error) {
 
 	var files []string
 	for _, entry := range entries {
-		if !entry.IsDir() {
-			files = append(files, filepath.Join(dirPath, entry.Name()))
+		path := filepath.Join(dirPath, entry.Name())
+		if entry.IsDir() {
+			nested, err := listFilesRecursive(path)
+			if err != nil {
+				return nil, err
+			}
+			files = append(files, nested...)
+			continue
 		}
+		files = append(files, path)
 	}
 
 	return files, nil
@@ -445,4 +491,26 @@ func (s *Skill) listDirFiles(dirType string) ([]string, error) {
 //   - string: 目录名称
 func (s *Skill) GetDirName() string {
 	return s.name
+}
+
+func listFilesRecursive(dirPath string) ([]string, error) {
+	entries, err := os.ReadDir(dirPath)
+	if err != nil {
+		return nil, err
+	}
+
+	var files []string
+	for _, entry := range entries {
+		path := filepath.Join(dirPath, entry.Name())
+		if entry.IsDir() {
+			nested, err := listFilesRecursive(path)
+			if err != nil {
+				return nil, err
+			}
+			files = append(files, nested...)
+			continue
+		}
+		files = append(files, path)
+	}
+	return files, nil
 }
