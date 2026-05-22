@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/longstageai/donk/donk/internal/background"
+	"github.com/longstageai/donk/donk/internal/creative"
+	"github.com/longstageai/donk/donk/internal/creative/agent"
 	"github.com/longstageai/donk/donk/internal/http"
 	"github.com/longstageai/donk/donk/internal/knowledge"
 	"github.com/longstageai/donk/donk/internal/multiagent"
@@ -30,6 +32,7 @@ type AppInitializer struct {
 	wsServer             *websocket.Server
 	scheduler            *scheduler.Scheduler
 	bgManager            *background.Manager
+	creativeRuntime      *creative.Runtime
 }
 
 // NewAppInitializer 创建应用程序初始化器
@@ -121,7 +124,7 @@ func (init *AppInitializer) initConfigServices() error {
 }
 
 // initCoreServices 初始化核心服务
-// 包括: MultiAgent、HTTP服务器、WebSocket、调度器
+// 包括: MultiAgent、HTTP服务器、WebSocket、调度器、Creative运行时
 func (init *AppInitializer) initCoreServices() error {
 
 	// 创建HTTP服务器并获取gin引擎
@@ -157,6 +160,45 @@ func (init *AppInitializer) initCoreServices() error {
 	}
 	init.scheduler = sched
 
+	// 初始化 Creative 运行时
+	if err := init.initCreativeRuntime(); err != nil {
+		// 非致命错误，记录日志但继续启动
+		fmt.Printf("初始化 Creative 运行时失败: %v\n", err)
+	}
+
+	// 注册 Creative 路由
+	if init.creativeRuntime != nil {
+		creativeHandler := creative.NewHandler(init.creativeRuntime)
+		creativeHandler.RegisterRoutes(engine)
+		fmt.Println("Creative API 路由已注册: /api/v1/creative/*")
+	}
+
+	return nil
+}
+
+// initCreativeRuntime 初始化 Creative 多Agent运行时
+func (init *AppInitializer) initCreativeRuntime() error {
+	// 创建 Agent 注册表
+	registry := creative.NewAgentRegistry()
+
+	// 创建 LLM 客户端
+	llmClient := agent.NewSettingModelLLMClient()
+
+	// 注册所有 LLM Agents
+	agent.RegisterLLMDefaultAgents(registry, llmClient)
+
+	// 创建 Runtime
+	runtime := creative.NewRuntime(registry)
+
+	init.creativeRuntime = runtime
+	fmt.Println("Creative 运行时初始化成功")
+	go func() {
+		s1, _ := init.creativeRuntime.StartSession(context.Background(), creative.Trigger{
+			"TimerTriggered",
+			"温暖小助手",
+		})
+		init.creativeRuntime.StartLoop(context.Background(), s1)
+	}()
 	return nil
 }
 
