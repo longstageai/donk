@@ -1,6 +1,11 @@
 package creative
 
-import "time"
+import (
+	"database/sql"
+	"time"
+
+	"github.com/longstageai/donk/donk/internal/token"
+)
 
 // BudgetScope 表示 Token 预算生效范围。
 type BudgetScope string
@@ -112,10 +117,12 @@ type TokenBudgetGuard interface {
 	BeforeNextTick(snapshot StateSnapshot) TokenBudgetDecision
 }
 
-// SimpleTokenBudgetGuard 是内存版 Token 预算守卫，用于第一阶段实现与单元测试。
+// SimpleTokenBudgetGuard 是支持数据库持久化的 Token 预算守卫。
 type SimpleTokenBudgetGuard struct {
-	budget TokenBudget       // 预算配置
-	usage  TokenUsageSummary // 当前使用量
+	budget     TokenBudget       // 预算配置
+	usage      TokenUsageSummary // 当前使用量（Session级别）
+	tokenStats *token.TokenStats // Token统计器（用于数据库记录和全局预算检查）
+	db         *sql.DB           // 数据库连接
 }
 
 // NewSimpleTokenBudgetGuard 创建 Token 预算守卫。
@@ -142,6 +149,21 @@ func NewSimpleTokenBudgetGuard(budget TokenBudget) *SimpleTokenBudgetGuard {
 	}
 }
 
+// NewSimpleTokenBudgetGuardWithDB 创建支持数据库持久化的 Token 预算守卫。
+// db: 数据库连接，用于持久化Token记录
+func NewSimpleTokenBudgetGuardWithDB(budget TokenBudget, db *sql.DB) (*SimpleTokenBudgetGuard, error) {
+	guard := NewSimpleTokenBudgetGuard(budget)
+	if db != nil {
+		guard.db = db
+		stats, err := token.NewTokenStats(db)
+		if err != nil {
+			return nil, err
+		}
+		guard.tokenStats = stats
+	}
+	return guard, nil
+}
+
 // BeforeBuildInput 在构建 Agent 输入前检查预算，避免已经超限后继续拼接大上下文。
 func (g *SimpleTokenBudgetGuard) BeforeBuildInput(req AgentRunRequest) TokenBudgetDecision {
 	return g.decision("构建 Agent 输入前检查 Token 预算")
@@ -163,11 +185,12 @@ func (g *SimpleTokenBudgetGuard) BeforeNextTick(snapshot StateSnapshot) TokenBud
 	return g.decision("进入下一 Tick 前检查 Token 预算")
 }
 
-// Record 累加一次 Token 消耗。
+// Record 累加一次 Token 消耗，并持久化到数据库。
 func (g *SimpleTokenBudgetGuard) Record(usage TokenUsage) {
 	if g == nil {
 		return
 	}
+	// 更新内存中的Session级别统计
 	g.usage.PromptTokens += usage.PromptTokens
 	g.usage.CompletionTokens += usage.CompletionTokens
 	g.usage.TotalTokens += usage.TotalTokens
@@ -179,6 +202,11 @@ func (g *SimpleTokenBudgetGuard) Record(usage TokenUsage) {
 		g.usage.ByModel[usage.ModelName] += usage.TotalTokens
 	}
 	g.refreshRatio()
+
+	// 持久化到数据库
+	if g.tokenStats != nil {
+		_ = g.tokenStats.Record(usage.PromptTokens, usage.CompletionTokens)
+	}
 }
 
 // Summary 返回当前 Token 消耗摘要。
@@ -198,12 +226,62 @@ func (g *SimpleTokenBudgetGuard) Budget() TokenBudget {
 }
 
 // decision 根据当前消耗和预算阈值计算下一步动作。
+// 优先使用数据库中的全局 Token 使用量进行预算检查。
 func (g *SimpleTokenBudgetGuard) decision(reason string) TokenBudgetDecision {
-	if g == nil || g.budget.MaxTotalTokens <= 0 {
+	if g == nil {
 		return TokenBudgetDecision{Allowed: true, Action: TokenActionContinue, Reason: reason}
 	}
-	g.refreshRatio()
-	current := g.usage.Clone()
+
+	// 获取当前使用量（优先从数据库获取全局统计）
+	current := g.getCurrentUsage()
+
+	// 如果有 tokenStats，使用 CheckBudget 进行预算检查
+	if g.tokenStats != nil {
+		ok, remaining := g.tokenStats.CheckBudget()
+		if !ok {
+			// 预算已超限
+			current.IsExceeded = true
+			current.IsNearLimit = true
+			current.BudgetRatio = 1.0
+			return TokenBudgetDecision{Allowed: false, Action: g.budget.OnStop, Reason: "Token 预算已超限", CurrentUsage: current, Budget: g.budget}
+		}
+		
+		// 计算预算比例（需要从 setting 获取限额）
+		current.IsExceeded = false
+		if remaining >= 0 {
+			// 有剩余预算，计算比例
+			totalLimit := g.tokenStats.GetDailyLimit()
+			if totalLimit > 0 {
+				used := totalLimit - remaining
+				current.BudgetRatio = float64(used) / float64(totalLimit)
+				current.IsNearLimit = current.BudgetRatio >= g.budget.WarnThresholdRatio
+			} else {
+				// 不限制
+				current.BudgetRatio = 0
+				current.IsNearLimit = false
+			}
+		} else {
+			// 不限制
+			current.BudgetRatio = 0
+			current.IsNearLimit = false
+		}
+		
+		if current.IsNearLimit {
+			return TokenBudgetDecision{Allowed: true, Action: g.budget.OnWarn, Reason: reason, CurrentUsage: current, Budget: g.budget}
+		}
+		return TokenBudgetDecision{Allowed: true, Action: TokenActionContinue, Reason: reason, CurrentUsage: current, Budget: g.budget}
+	}
+
+	// 如果没有设置预算限制，允许继续
+	if g.budget.MaxTotalTokens <= 0 {
+		return TokenBudgetDecision{Allowed: true, Action: TokenActionContinue, Reason: reason, CurrentUsage: current, Budget: g.budget}
+	}
+
+	// 计算预算比例（回退到使用 MaxTotalTokens）
+	current.BudgetRatio = float64(current.TotalTokens) / float64(g.budget.MaxTotalTokens)
+	current.IsNearLimit = current.BudgetRatio >= g.budget.WarnThresholdRatio
+	current.IsExceeded = current.BudgetRatio >= g.budget.StopThresholdRatio
+
 	if current.IsExceeded {
 		return TokenBudgetDecision{Allowed: false, Action: g.budget.OnStop, Reason: reason, CurrentUsage: current, Budget: g.budget}
 	}
@@ -211,6 +289,31 @@ func (g *SimpleTokenBudgetGuard) decision(reason string) TokenBudgetDecision {
 		return TokenBudgetDecision{Allowed: true, Action: g.budget.OnWarn, Reason: reason, CurrentUsage: current, Budget: g.budget}
 	}
 	return TokenBudgetDecision{Allowed: true, Action: TokenActionContinue, Reason: reason, CurrentUsage: current, Budget: g.budget}
+}
+
+// getCurrentUsage 获取当前 Token 使用量。
+// 如果有数据库连接，优先返回数据库中的全局统计；否则返回内存中的Session级别统计。
+func (g *SimpleTokenBudgetGuard) getCurrentUsage() TokenUsageSummary {
+	// 基础数据使用内存中的Session级别统计
+	usage := g.usage.Clone()
+
+	// 如果有数据库统计，使用数据库中的全局总量
+	if g.tokenStats != nil {
+		totalTokens := g.tokenStats.GetTodayUsage()
+		// 保持Session级别的分类统计，但使用全局总量
+		usage.TotalTokens = totalTokens
+		// 根据总量重新计算Prompt和Completion的比例估算
+		if g.usage.TotalTokens > 0 {
+			ratio := float64(totalTokens) / float64(g.usage.TotalTokens)
+			usage.PromptTokens = int(float64(g.usage.PromptTokens) * ratio)
+			usage.CompletionTokens = int(float64(g.usage.CompletionTokens) * ratio)
+		} else {
+			// 如果Session还没有使用量，使用数据库总量作为PromptTokens估算
+			usage.PromptTokens = totalTokens
+		}
+	}
+
+	return usage
 }
 
 // refreshRatio 刷新预算比例和阈值标记。

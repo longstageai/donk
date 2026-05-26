@@ -204,4 +204,37 @@ var TableSchemas = []string{
 		value TEXT NOT NULL,                                   -- 状态值
 		updated_at DATETIME NOT NULL DEFAULT (datetime('now')) -- 更新时间
 	);`,
+
+	// ============================================
+	// 创意记录表
+	// 存储创意去重Agent的创意记录
+	// ============================================
+	`CREATE TABLE IF NOT EXISTS creatives (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,                  -- 主键ID
+		title TEXT NOT NULL,                                   -- 创意标题
+		description TEXT,                                      -- 创意描述
+		content TEXT,                                          -- 创意内容
+		source TEXT,                                           -- 来源
+		status TEXT DEFAULT 'active',                          -- 状态: active/inactive
+		created_at DATETIME NOT NULL DEFAULT (datetime('now')),-- 创建时间
+		updated_at DATETIME NOT NULL DEFAULT (datetime('now')) -- 更新时间
+	);`,
+
+	// ============================================
+	// 创意记录表索引
+	// idx_creatives_created_at: 按创建时间查询
+	// idx_creatives_status: 按状态查询
+	// ============================================
+	`CREATE INDEX IF NOT EXISTS idx_creatives_created_at ON creatives(created_at);`,
+	`CREATE INDEX IF NOT EXISTS idx_creatives_status ON creatives(status);`,
+
+	// ============================================
+	// Creative 多 Agent 运行状态表
+	// 存储 Creative 多 Agent 全局启停状态
+	// ============================================
+	`CREATE TABLE IF NOT EXISTS creative_runtime_state (
+		id INTEGER PRIMARY KEY CHECK (id = 1),
+		status TEXT NOT NULL DEFAULT 'running',              -- 默认状态为运行中
+		updated_at DATETIME NOT NULL DEFAULT (datetime('now')) -- 更新时间
+	);`,
 }

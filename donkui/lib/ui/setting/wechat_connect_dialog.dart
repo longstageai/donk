@@ -5,6 +5,7 @@ import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../app/conf/colors.dart';
 import '../../common/service/wechat_bot_service.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// 微信连接对话框
 /// 显示二维码和连接状态
@@ -183,9 +184,9 @@ class _WeChatConnectDialogState extends State<WeChatConnectDialog> {
           children: [
             Icon(Icons.phone_android, color: AppColors.c1, size: 24),
             const SizedBox(width: 12),
-            const Text(
-              '微信连接',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            Text(
+              AppLocalizations.of(context)!.wechatConnect,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -225,7 +226,7 @@ class _WeChatConnectDialogState extends State<WeChatConnectDialog> {
               icon: const Icon(Icons.close, size: 20),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
-              tooltip: '关闭',
+              tooltip: AppLocalizations.of(context)!.close,
             ),
           ],
         ),
@@ -302,12 +303,12 @@ class _WeChatConnectDialogState extends State<WeChatConnectDialog> {
         ),
         const SizedBox(height: 16),
         Text(
-          '请使用微信扫描二维码登录',
+          AppLocalizations.of(context)!.wechatScanQR,
           style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
         ),
         const SizedBox(height: 8),
         Text(
-          '二维码将在一段时间后过期，请尽快扫描',
+          AppLocalizations.of(context)!.wechatQRCodeHint,
           style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
         ),
       ],
@@ -331,13 +332,13 @@ class _WeChatConnectDialogState extends State<WeChatConnectDialog> {
           ),
         ),
         const SizedBox(height: 24),
-        const Text(
-          '已扫码',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        Text(
+          AppLocalizations.of(context)!.wechatScanned,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
         Text(
-          '请在手机上确认登录',
+          AppLocalizations.of(context)!.wechatConfirmLogin,
           style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
         ),
       ],
@@ -357,13 +358,13 @@ class _WeChatConnectDialogState extends State<WeChatConnectDialog> {
           child: Icon(Icons.wechat, size: 60, color: Colors.green.shade600),
         ),
         const SizedBox(height: 24),
-        const Text(
-          '微信已连接',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        Text(
+          AppLocalizations.of(context)!.wechatConnected,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
         Text(
-          '您可以接收和发送微信消息',
+          AppLocalizations.of(context)!.wechatConnectedDesc,
           style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
         ),
       ],
@@ -392,7 +393,7 @@ class _WeChatConnectDialogState extends State<WeChatConnectDialog> {
         ),
         const SizedBox(height: 24),
         Text(
-          '正在连接微信...',
+          AppLocalizations.of(context)!.wechatConnecting,
           style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
         ),
         const SizedBox(height: 28),
@@ -417,15 +418,15 @@ class _WeChatConnectDialogState extends State<WeChatConnectDialog> {
           ),
         ),
         const SizedBox(height: 24),
-        const Text(
-          '连接失败',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        Text(
+          AppLocalizations.of(context)!.wechatConnectFailed,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            _errorMessage ?? '未知错误',
+            _errorMessage ?? AppLocalizations.of(context)!.unknownError,
             style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
             textAlign: TextAlign.center,
             maxLines: 3,
@@ -437,6 +438,7 @@ class _WeChatConnectDialogState extends State<WeChatConnectDialog> {
   }
 
   Widget _buildFooter() {
+    final l10n = AppLocalizations.of(context)!;
     // 已连接状态显示断开按钮
     if (_status == WeChatConnectionStatus.connected) {
       return Row(
@@ -445,7 +447,7 @@ class _WeChatConnectDialogState extends State<WeChatConnectDialog> {
           TextButton.icon(
             onPressed: _disconnect,
             icon: const Icon(Icons.logout, size: 18),
-            label: const Text('断开连接'),
+            label: Text(l10n.disconnect),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
           ),
         ],
@@ -460,7 +462,7 @@ class _WeChatConnectDialogState extends State<WeChatConnectDialog> {
           ElevatedButton.icon(
             onPressed: _reconnect,
             icon: const Icon(Icons.refresh, size: 18),
-            label: const Text('重新连接'),
+            label: Text(l10n.reconnect),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.c1,
               foregroundColor: Colors.white,
@@ -476,7 +478,7 @@ class _WeChatConnectDialogState extends State<WeChatConnectDialog> {
       children: [
         TextButton(
           onPressed: () => WeChatConnectDialog.dismiss(),
-          child: const Text('取消'),
+          child: Text(l10n.cancel),
         ),
       ],
     );

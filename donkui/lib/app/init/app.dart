@@ -1,5 +1,5 @@
-import 'package:donk/common/service/process_manager_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:window_manager/window_manager.dart';
@@ -8,8 +8,10 @@ import '../../common/service/chat_storage_service.dart';
 import '../../common/service/notification_websocket_service.dart';
 import '../../common/service/single_instance_service.dart';
 import '../../common/service/wechat_bot_service.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../../ui/home/home_controller.dart';
 import '../conf/config.dart';
+import '../controller/locale_controller.dart';
 import '../router/routes.dart';
 
 class App extends StatefulWidget {
@@ -51,7 +53,7 @@ class App extends StatefulWidget {
     await Routes.initInitialLocation();
     await wm();
     // 启动外部服务器程序
-    await ProcessManagerService.startServer();
+    // await ProcessManagerService.startServer();
     // 初始化依赖注入
     _initDependencies();
     // 检查微信登录状态，如有凭证则自动连接
@@ -97,6 +99,9 @@ class App extends StatefulWidget {
       HomeController(wechatService: Get.find(), storageService: Get.find()),
       permanent: true,
     );
+
+    // 注册 LocaleController（全局存在，使用 permanent: true）
+    Get.put(LocaleController(), permanent: true);
   }
 
   @override
@@ -126,16 +131,31 @@ class _AppState extends State<App> with WindowListener {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: name,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-        fontFamily: 'SourceHanSansSC',
-      ),
-      debugShowCheckedModeBanner: false,
-      routerConfig: Routes.router,
-      builder: FlutterSmartDialog.init(),
+    return GetBuilder<LocaleController>(
+      builder: (controller) {
+        return MaterialApp.router(
+          title: name,
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+            useMaterial3: true,
+            fontFamily: 'SourceHanSansSC',
+          ),
+          debugShowCheckedModeBanner: false,
+          routerConfig: Routes.router,
+          builder: FlutterSmartDialog.init(),
+          locale: controller.locale,
+          supportedLocales: const [
+            Locale('zh'),
+            Locale('en'),
+          ],
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+        );
+      },
     );
   }
 }

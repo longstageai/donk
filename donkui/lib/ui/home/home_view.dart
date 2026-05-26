@@ -4,8 +4,8 @@ import 'package:get/get.dart';
 import 'component/home_body.dart';
 import 'home_controller.dart';
 import 'component/home_bottom.dart';
-import 'component/home_drawer.dart';
 import 'component/home_header.dart';
+import 'component/message_drawer.dart';
 
 /// 首页视图
 /// 包含顶部导航栏、中间内容区域和底部输入框组件
@@ -23,8 +23,8 @@ class _HomeViewState extends State<HomeView> {
   /// Scaffold状态键，用于控制抽屉开关
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  /// 切换右侧抽屉的显示/隐藏状态
-  void _toggleDrawer() {
+  /// 切换消息通知抽屉的显示/隐藏状态
+  void _toggleMessageDrawer() {
     if (_scaffoldKey.currentState!.isEndDrawerOpen) {
       _scaffoldKey.currentState!.closeEndDrawer();
     } else {
@@ -43,8 +43,7 @@ class _HomeViewState extends State<HomeView> {
           child: Column(
             children: [
               /// 构建顶部导航栏
-              /// 包含龙虾管家按钮、已使用资源显示和安全检查按钮
-              HomeHeader(onTap: _toggleDrawer),
+              HomeHeader(onMessageTap: _toggleMessageDrawer),
 
               /// 构建中间内容区域
               Expanded(child: HomeBody()),
@@ -55,18 +54,29 @@ class _HomeViewState extends State<HomeView> {
           ),
         ),
 
-        // 右侧抽屉
-        endDrawer: Drawer(
-          width: 300,
-          elevation: 0,
-          shape: RoundedRectangleBorder(),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: AppColors.backgroundColor, width: 1),
-            ),
-            child: HomeDrawer(),
-          ),
+        // 右侧消息通知抽屉
+        onEndDrawerChanged: (isOpen) {
+          // 抽屉打开时通知 MessageDrawer 刷新状态
+          if (isOpen) {
+            MessageDrawer.refreshStatus();
+          }
+        },
+        endDrawer: Builder(
+          builder: (context) {
+            final screenWidth = MediaQuery.of(context).size.width;
+            return Drawer(
+              width: screenWidth * 0.6,
+              elevation: 0,
+              shape: const RoundedRectangleBorder(),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: AppColors.backgroundColor, width: 1),
+                ),
+                child: const MessageDrawer(),
+              ),
+            );
+          }
         ),
       ),
     );

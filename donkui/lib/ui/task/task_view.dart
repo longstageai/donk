@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../common/service/task_service.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'task_model.dart';
 import 'task_list_view.dart';
 import 'task_runs_view.dart';
@@ -127,24 +128,26 @@ class _TaskViewState extends State<TaskView> {
         }
       });
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('操作失败: $e')));
+        ).showSnackBar(SnackBar(content: Text('${l10n.operationFailed}: $e')));
       }
     }
   }
 
   void _handleTaskExecute(Task task) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('立即执行'),
-            content: Text('确定要立即执行任务"${task.name}"吗？'),
+            title: Text(l10n.executeConfirmTitle),
+            content: Text(l10n.executeConfirmMessageTask(task.name)),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('取消'),
+                child: Text(l10n.cancel),
               ),
               TextButton(
                 onPressed: () async {
@@ -156,19 +159,19 @@ class _TaskViewState extends State<TaskView> {
                     await TaskService.triggerTask(taskId);
                     if (mounted) {
                       scaffoldMessenger.showSnackBar(
-                        SnackBar(content: Text('任务"$taskName"已开始执行')),
+                        SnackBar(content: Text(l10n.taskExecuted(taskName))),
                       );
                     }
                     await _loadTasks();
                   } catch (e) {
                     if (mounted) {
                       scaffoldMessenger.showSnackBar(
-                        SnackBar(content: Text('执行失败: $e')),
+                        SnackBar(content: Text('${l10n.executeFailed}: $e')),
                       );
                     }
                   }
                 },
-                child: const Text('确定'),
+                child: Text(l10n.confirm),
               ),
             ],
           ),
@@ -176,16 +179,17 @@ class _TaskViewState extends State<TaskView> {
   }
 
   void _handleTaskRemove(Task task) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('移除任务'),
-            content: Text('确定要移除任务"${task.name}"吗？此操作不可恢复。'),
+            title: Text(l10n.removeTask),
+            content: Text(l10n.removeTaskConfirmMessage(task.name)),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('取消'),
+                child: Text(l10n.cancel),
               ),
               TextButton(
                 onPressed: () async {
@@ -197,18 +201,18 @@ class _TaskViewState extends State<TaskView> {
                     await _loadTasks();
                     if (mounted) {
                       scaffoldMessenger.showSnackBar(
-                        const SnackBar(content: Text('任务已移除')),
+                        SnackBar(content: Text(l10n.taskRemoved)),
                       );
                     }
                   } catch (e) {
                     if (mounted) {
                       scaffoldMessenger.showSnackBar(
-                        SnackBar(content: Text('移除失败: $e')),
+                        SnackBar(content: Text('${l10n.removeFailed}: $e')),
                       );
                     }
                   }
                 },
-                child: const Text('确定'),
+                child: Text(l10n.confirm),
               ),
             ],
           ),
@@ -217,12 +221,13 @@ class _TaskViewState extends State<TaskView> {
 
   /// 构建页面标题
   Widget _buildHeader() {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          '任务管理',
-          style: TextStyle(
+        Text(
+          l10n.taskManagement,
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
@@ -234,7 +239,7 @@ class _TaskViewState extends State<TaskView> {
             IconButton(
               onPressed: _isLoading ? null : _loadTasks,
               icon: const Icon(Icons.refresh, size: 20),
-              tooltip: '刷新列表',
+              tooltip: l10n.refreshList,
             ),
           ],
         ),
@@ -277,12 +282,12 @@ class _TaskViewState extends State<TaskView> {
             const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
             Text(
-              '加载失败: $_errorMessage',
+              '${AppLocalizations.of(context)!.loadingFailed}: $_errorMessage',
               style: const TextStyle(color: Colors.red),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            ElevatedButton(onPressed: _loadTasks, child: const Text('重试')),
+            ElevatedButton(onPressed: _loadTasks, child: Text(AppLocalizations.of(context)!.retry)),
           ],
         ),
       );

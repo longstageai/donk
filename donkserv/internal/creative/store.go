@@ -56,6 +56,18 @@ func (s *Store) GetSession(id ID) (Session, bool) {
 	return session, ok
 }
 
+func (s *Store) LatestSession() (Session, bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	var latest Session
+	for _, session := range s.sessions {
+		if latest.ID == "" || session.StartedAt.After(latest.StartedAt) {
+			latest = session
+		}
+	}
+	return latest, latest.ID != ""
+}
+
 func (s *Store) UpdateSession(id ID, fn func(*Session)) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()

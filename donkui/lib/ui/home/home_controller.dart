@@ -5,7 +5,9 @@ import 'package:get/get.dart';
 
 import '../../common/client/sse_client.dart';
 import '../../common/model/chat_message.dart';
+import '../../common/model/notification_message.dart';
 import '../../common/service/chat_storage_service.dart';
+import '../../common/service/notification_websocket_service.dart';
 import '../../common/service/wechat_bot_service.dart';
 import '../../common/wechatbot/wechatbot.dart';
 import '../../core/constants/sse_events.dart';
@@ -16,12 +18,15 @@ class HomeController extends GetxController {
   // ==================== 依赖注入 ====================
   final WeChatBotService _wechatService;
   final ChatStorageService _storageService;
+  final NotificationWebSocketService _notificationService;
 
   HomeController({
     required WeChatBotService wechatService,
     required ChatStorageService storageService,
+    NotificationWebSocketService? notificationService,
   }) : _wechatService = wechatService,
-       _storageService = storageService;
+       _storageService = storageService,
+       _notificationService = notificationService ?? Get.find<NotificationWebSocketService>();
 
   // ==================== 配置 ====================
   static final String _sseUrl = app_config.sseUrl;
@@ -76,6 +81,16 @@ class HomeController extends GetxController {
 
   /// Token 刷新触发器 - 当 Agent 回复完成时触发
   final RxInt _tokenRefreshTrigger = 0.obs;
+
+  // ==================== WebSocket 通知消息 ====================
+  /// WebSocket 通知消息列表
+  RxList<NotificationMessage> get notificationMessages => _notificationService.messages;
+
+  /// 未读消息数量
+  RxInt get unreadNotificationCount => _notificationService.unreadCount;
+
+  /// WebSocket 连接状态
+  RxBool get isNotificationConnected => _notificationService.isConnected;
 
   // ==================== 生命周期 ====================
   @override

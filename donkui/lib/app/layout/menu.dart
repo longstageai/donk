@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import 'app_dialog.dart';
 import '../../ui/setting/wechat_connect_dialog.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 class AppMenu extends StatefulWidget {
   const AppMenu({super.key});
@@ -106,6 +107,7 @@ class _AppMenuState extends State<AppMenu> {
   }
 
   Widget top(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
@@ -113,21 +115,21 @@ class _AppMenuState extends State<AppMenu> {
         _NavItem(
           index: 0,
           icon: Icons.mark_unread_chat_alt_sharp,
-          label: '对话',
+          label: l10n.chat,
           selectedIndex: selectedIndex,
           onSelect: onSelect,
         ),
         _NavItem(
           index: 1,
           icon: Icons.auto_awesome,
-          label: '灵感',
+          label: l10n.idea,
           selectedIndex: selectedIndex,
           onSelect: onSelect,
         ),
         _NavItem(
           index: 2,
           icon: Icons.task_sharp,
-          label: '任务',
+          label: l10n.task,
           selectedIndex: selectedIndex,
           onSelect: onSelect,
         ),

@@ -2,6 +2,7 @@ package creative
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"sync"
@@ -11,10 +12,11 @@ import (
 )
 
 var (
-	ErrSessionNotFound = errors.New("creative session not found")
-	ErrRoomNotFound    = errors.New("creative room not found")
-	ErrLoopPaused      = errors.New("creative loop paused")
-	ErrLoopStopped     = errors.New("creative loop stopped")
+	ErrSessionNotFound     = errors.New("creative session not found")
+	ErrRoomNotFound        = errors.New("creative room not found")
+	ErrLoopPaused          = errors.New("creative loop paused")
+	ErrLoopStopped         = errors.New("creative loop stopped")
+	ErrTokenBudgetExceeded = errors.New("creative token budget exceeded")
 )
 
 // StopMode 表示停止事件循环的方式。
@@ -151,6 +153,25 @@ func WithTokenGuard(guard *SimpleTokenBudgetGuard) RuntimeOption {
 	return func(r *Runtime) { r.tokenGuard = guard }
 }
 
+// WithTokenGuardAndDB 使用数据库创建 Token 预算守卫，支持 Token 持久化和全局预算检查。
+// budget: Token 预算配置
+// db: 数据库连接，用于持久化 Token 记录
+func WithTokenGuardAndDB(budget TokenBudget, db *sql.DB) RuntimeOption {
+	return func(r *Runtime) {
+		if db != nil {
+			guard, err := NewSimpleTokenBudgetGuardWithDB(budget, db)
+			if err != nil {
+				logger.Warn("创建带数据库的 Token 预算守卫失败，使用内存版本", map[string]interface{}{"error": err.Error()})
+				r.tokenGuard = NewSimpleTokenBudgetGuard(budget)
+			} else {
+				r.tokenGuard = guard
+			}
+		} else {
+			r.tokenGuard = NewSimpleTokenBudgetGuard(budget)
+		}
+	}
+}
+
 func WithRuntimeConfig(config RuntimeConfig) RuntimeOption {
 	return func(r *Runtime) { r.config = config }
 }
@@ -236,7 +257,7 @@ func (r *Runtime) RunSession(ctx context.Context, sessionID ID) error {
 			if !decision.Allowed {
 				r.notifyTokenDecision(ctx, session, decision)
 				r.applyTokenDecision(sessionID, decision)
-				return nil
+				return ErrTokenBudgetExceeded
 			}
 			if decision.Action != TokenActionContinue {
 				r.notifyTokenDecision(ctx, session, decision)
@@ -257,6 +278,11 @@ func (r *Runtime) RunSession(ctx context.Context, sessionID ID) error {
 			}
 			if err := r.processEvent(ctx, sessionID, event); err != nil {
 				return err
+			}
+			if latest, ok := r.store.GetSession(sessionID); ok {
+				if latest.Status == SessionCompleted || latest.Status == SessionFailed || latest.Status == SessionBlocked || latest.Status == SessionCancelled {
+					return nil
+				}
 			}
 		}
 		if latest, ok := r.store.GetSession(sessionID); ok {
@@ -346,6 +372,15 @@ func (r *Runtime) processEvent(ctx context.Context, sessionID ID, event Event) e
 	r.logInfo("事件已被 Agent 认领", map[string]interface{}{"event_id": event.ID, "event_type": event.Type, "agent_id": agent.ID(), "confidence": claim.Confidence})
 
 	req := AgentRunRequest{Session: session, Room: room, Event: event, Agent: agent, RunID: runID}
+	if r.tokenGuard != nil {
+		decision := r.tokenGuard.BeforeBuildInput(req)
+		if !decision.Allowed {
+			r.notifyTokenDecision(ctx, session, decision)
+			r.finishRunBlockedByTokenLimit(ctx, session, runID, event.ID, agent.ID(), TokenUsage{}, decision)
+			r.applyTokenDecision(sessionID, decision)
+			return ErrTokenBudgetExceeded
+		}
+	}
 	if err := r.hooks.BeforeInput(&req); err != nil {
 		r.failAgentRunAndEvent(ctx, session, runID, event.ID, agent.ID(), err)
 		r.notifyRuntimeError(ctx, session, event.ID, "before_input_hook_failed", "Agent 输入前置 Hook 执行失败", err, true)
@@ -362,15 +397,16 @@ func (r *Runtime) processEvent(ctx context.Context, sessionID ID, event Event) e
 		decision := r.tokenGuard.BeforeInvoke(input)
 		if !decision.Allowed {
 			r.notifyTokenDecision(ctx, session, decision)
+			r.finishRunBlockedByTokenLimit(ctx, session, runID, event.ID, agent.ID(), TokenUsage{}, decision)
 			r.applyTokenDecision(sessionID, decision)
-			return nil
+			return ErrTokenBudgetExceeded
 		}
 	}
 
 	r.store.UpdateEvent(event.ID, func(e *Event) { e.Status = EventProcessing })
 	r.notify(ctx, RuntimeStreamEventProcessing, session, RuntimeSeverityInfo, event, withEventID(event.ID), withAgentID(agent.ID()), withRunID(runID))
 	output := agent.Handle(ctx, input)
-	if err := r.hooks.BeforeOutput(&output); err != nil {
+	if err := r.hooks.BeforeOutput(&req, &output); err != nil {
 		r.failAgentRunAndEvent(ctx, session, runID, event.ID, agent.ID(), err)
 		r.notifyRuntimeError(ctx, session, event.ID, "before_output_hook_failed", "Agent 输出前置 Hook 执行失败", err, true)
 		return err
@@ -387,6 +423,11 @@ func (r *Runtime) processEvent(ctx context.Context, sessionID ID, event Event) e
 		if decision.Action != TokenActionContinue {
 			r.notifyTokenDecision(ctx, session, decision)
 			r.publishTokenDecisionEvent(session, decision)
+		}
+		if !decision.Allowed {
+			r.finishRunBlockedByTokenLimit(ctx, session, runID, event.ID, agent.ID(), output.TokenUsage, decision)
+			r.applyTokenDecision(sessionID, decision)
+			return ErrTokenBudgetExceeded
 		}
 	}
 
@@ -414,6 +455,32 @@ func (r *Runtime) processEvent(ctx context.Context, sessionID ID, event Event) e
 	snapshot := r.TakeSnapshot(sessionID)
 	r.notifySnapshot(ctx, snapshot)
 	return nil
+}
+
+func (r *Runtime) finishRunBlockedByTokenLimit(ctx context.Context, session Session, runID ID, eventID ID, agentID ID, usage TokenUsage, decision TokenBudgetDecision) {
+	completedAt := time.Now()
+	r.store.UpdateAgentRun(runID, func(run *AgentRun) {
+		run.Status = AgentRunFailed
+		run.TokenUsage = TokenUsageSummary{
+			PromptTokens:     usage.PromptTokens,
+			CompletionTokens: usage.CompletionTokens,
+			TotalTokens:      usage.TotalTokens,
+			EstimatedCost:    usage.EstimatedCost,
+			ByAgent:          map[string]int{},
+			ByEventType:      map[string]int{},
+			ByModel:          map[string]int{},
+			BudgetRatio:      decision.CurrentUsage.BudgetRatio,
+			IsNearLimit:      decision.CurrentUsage.IsNearLimit,
+			IsExceeded:       decision.CurrentUsage.IsExceeded,
+		}
+		run.Error = decision.Reason
+		run.CompletedAt = &completedAt
+	})
+	r.store.UpdateEvent(eventID, func(event *Event) { event.Status = EventFailed })
+	if failedRun, ok := r.latestRun(runID); ok {
+		r.notify(ctx, RuntimeStreamAgentRunFailed, session, RuntimeSeverityError, failedRun, withEventID(eventID), withAgentID(agentID), withRunID(runID))
+	}
+	r.notifyEventStatus(ctx, session.ID, eventID, RuntimeStreamEventFailed, RuntimeSeverityError)
 }
 
 // selectAgent 根据 Agent 的 CanHandle 结果选择最合适的认领者。

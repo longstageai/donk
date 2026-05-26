@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 
 import '../../common/model/skill.dart';
 import '../../common/service/skill_service.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// Skill 详情页
 /// 展示 Skill 的完整信息，支持打开 Skill 文件
@@ -42,8 +43,9 @@ class _SkillDetailPageState extends State<SkillDetailPage> {
         await SkillService.enableSkill(_skill.name);
       }
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(newEnabled ? 'Skill 已启动' : 'Skill 已停止')),
+          SnackBar(content: Text(newEnabled ? l10n.skillStarted : l10n.skillStopped)),
         );
       }
     } catch (e) {
@@ -51,9 +53,10 @@ class _SkillDetailPageState extends State<SkillDetailPage> {
         _skill = _skill.copyWith(enabled: originalEnabled);
       });
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('操作失败: $e')));
+        ).showSnackBar(SnackBar(content: Text('${l10n.operationFailed}: $e')));
       }
     }
   }
@@ -78,9 +81,10 @@ class _SkillDetailPageState extends State<SkillDetailPage> {
 
       if (!await file.exists()) {
         if (mounted) {
+          final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text('文件不存在: $filePath')));
+          ).showSnackBar(SnackBar(content: Text('${l10n.fileNotFound}: $filePath')));
         }
         return;
       }
@@ -94,17 +98,19 @@ class _SkillDetailPageState extends State<SkillDetailPage> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('打开文件失败: $e')));
+        ).showSnackBar(SnackBar(content: Text('${l10n.openFileFailed}: $e')));
       }
     }
   }
 
   void _copyPath() {
+    final l10n = AppLocalizations.of(context)!;
     Clipboard.setData(ClipboardData(text: _skillFilePath));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('文件路径已复制')),
+      SnackBar(content: Text(l10n.filePathCopied)),
     );
   }
 
@@ -296,7 +302,7 @@ class _SkillDetailPageState extends State<SkillDetailPage> {
                     const SizedBox(width: 18),
                     _buildMetaText(
                       Icons.person_outline,
-                      _skill.author.isNotEmpty ? _skill.author : '未知作者',
+                      _skill.author.isNotEmpty ? _skill.author : AppLocalizations.of(context)!.unknownAuthor,
                     ),
                   ],
                 ),
@@ -309,7 +315,7 @@ class _SkillDetailPageState extends State<SkillDetailPage> {
             child: FilledButton.icon(
               onPressed: _toggleSkillEnabled,
               icon: Icon(_skill.enabled ? Icons.stop : Icons.play_arrow),
-              label: Text(_skill.enabled ? '停止' : '启动'),
+              label: Text(_skill.enabled ? AppLocalizations.of(context)!.stop : AppLocalizations.of(context)!.start),
               style: FilledButton.styleFrom(
                 backgroundColor: _skill.enabled
                     ? const Color(0xFFFF9800)
@@ -328,11 +334,12 @@ class _SkillDetailPageState extends State<SkillDetailPage> {
   }
 
   Widget _buildDescriptionCard() {
+    final l10n = AppLocalizations.of(context)!;
     return _buildPanel(
-      title: '描述',
+      title: l10n.description,
       icon: Icons.notes_outlined,
       child: Text(
-        _skill.description.isNotEmpty ? _skill.description : '暂无描述',
+        _skill.description.isNotEmpty ? _skill.description : l10n.noData,
         style: const TextStyle(
           fontSize: 15,
           height: 1.7,
@@ -343,13 +350,14 @@ class _SkillDetailPageState extends State<SkillDetailPage> {
   }
 
   Widget _buildFileCard() {
+    final l10n = AppLocalizations.of(context)!;
     return _buildPanel(
-      title: 'Skill 文件',
+      title: l10n.skillFile,
       icon: Icons.article_outlined,
       action: TextButton.icon(
         onPressed: _openSkillFile,
         icon: const Icon(Icons.open_in_new, size: 16),
-        label: const Text('打开'),
+        label: Text(l10n.open),
         style: TextButton.styleFrom(foregroundColor: Colors.blue),
       ),
       child: Container(
@@ -376,7 +384,7 @@ class _SkillDetailPageState extends State<SkillDetailPage> {
             IconButton(
               onPressed: _copyPath,
               icon: const Icon(Icons.copy, size: 18),
-              tooltip: '复制文件路径',
+              tooltip: AppLocalizations.of(context)!.copyFilePath,
               color: Colors.grey.shade600,
             ),
           ],
@@ -386,20 +394,21 @@ class _SkillDetailPageState extends State<SkillDetailPage> {
   }
 
   Widget _buildStatusCard() {
+    final l10n = AppLocalizations.of(context)!;
     return _buildPanel(
-      title: '调用设置',
+      title: l10n.invocationSettings,
       icon: Icons.tune_outlined,
       child: Column(
         children: [
           _buildSettingTile(
-            '用户可调用',
-            _skill.userInvocable ? '允许通过斜杠命令调用' : '不允许用户直接调用',
+            l10n.userInvocable,
+            _skill.userInvocable ? l10n.userInvocableDesc : l10n.userNotInvocableDesc,
             _skill.userInvocable,
           ),
           const SizedBox(height: 12),
           _buildSettingTile(
-            '自动触发',
-            _skill.disableModelInvocation ? '已禁用模型自动触发' : '允许模型自动触发',
+            l10n.autoTrigger,
+            _skill.disableModelInvocation ? l10n.autoTriggerDisabled : l10n.autoTriggerEnabled,
             !_skill.disableModelInvocation,
           ),
         ],
@@ -408,8 +417,9 @@ class _SkillDetailPageState extends State<SkillDetailPage> {
   }
 
   Widget _buildTagsCard() {
+    final l10n = AppLocalizations.of(context)!;
     return _buildPanel(
-      title: '标签',
+      title: l10n.tags,
       icon: Icons.label_outline,
       child: Wrap(
         spacing: 8,
@@ -437,14 +447,15 @@ class _SkillDetailPageState extends State<SkillDetailPage> {
   }
 
   Widget _buildAssetsCard() {
+    final l10n = AppLocalizations.of(context)!;
     final items = [
-      _DirectoryInfo('scripts', Icons.terminal, _skill.hasScripts),
-      _DirectoryInfo('references', Icons.menu_book_outlined, _skill.hasReferences),
-      _DirectoryInfo('assets', Icons.perm_media_outlined, _skill.hasAssets),
+      _DirectoryInfo(l10n.scripts, Icons.terminal, _skill.hasScripts),
+      _DirectoryInfo(l10n.references, Icons.menu_book_outlined, _skill.hasReferences),
+      _DirectoryInfo(l10n.assets, Icons.perm_media_outlined, _skill.hasAssets),
     ];
 
     return _buildPanel(
-      title: '资源目录',
+      title: l10n.resourceDir,
       icon: Icons.folder_copy_outlined,
       child: Column(
         children: items.map((item) {
@@ -479,7 +490,7 @@ class _SkillDetailPageState extends State<SkillDetailPage> {
                   ),
                 ),
                 _buildPill(
-                  text: item.exists ? '存在' : '无',
+                  text: item.exists ? AppLocalizations.of(context)!.exists : AppLocalizations.of(context)!.notExists,
                   color: item.exists ? Colors.blue : Colors.grey,
                 ),
               ],

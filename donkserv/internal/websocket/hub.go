@@ -142,6 +142,17 @@ func (h *Hub) Broadcast(msg *Message) error {
 	return nil
 }
 
+func (h *Hub) BroadcastJson(data []byte) {
+	select {
+	case h.broadcast <- data:
+	default:
+		logger.Warn("广播通道已满，消息被丢弃", map[string]interface{}{
+			"channelSize": len(h.broadcast),
+		})
+	}
+
+}
+
 // BroadcastJSON 直接广播原始 JSON 数据（非阻塞）
 // data: JSON 格式的字节数据
 func (h *Hub) BroadcastJSON(data []byte) {

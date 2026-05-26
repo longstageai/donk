@@ -1,5 +1,13 @@
 package creative
 
+import (
+	"encoding/json"
+	"time"
+
+	"github.com/longstageai/donk/donk/internal/websocket"
+	"github.com/longstageai/donk/donk/pkg/logger"
+)
+
 // AgentRunRequest 表示 Runtime 准备执行某个 AgentRun 的请求。
 type AgentRunRequest struct {
 	Session Session // 会话信息
@@ -13,17 +21,17 @@ type AgentRunRequest struct {
 type HookPipeline interface {
 	BeforeInput(req *AgentRunRequest) error
 	AfterInput(input *AgentInput) error
-	BeforeOutput(output *AgentOutput) error
+	BeforeOutput(req *AgentRunRequest, output *AgentOutput) error
 	AfterOutput(result *AgentRun) error
 }
 
 // NoopHookPipeline 是默认空 Hook 实现，保留扩展点但不改变数据。
 type NoopHookPipeline struct{}
 
-func (NoopHookPipeline) BeforeInput(req *AgentRunRequest) error { return nil }
-func (NoopHookPipeline) AfterInput(input *AgentInput) error     { return nil }
-func (NoopHookPipeline) BeforeOutput(output *AgentOutput) error { return nil }
-func (NoopHookPipeline) AfterOutput(result *AgentRun) error     { return nil }
+func (NoopHookPipeline) BeforeInput(req *AgentRunRequest) error                       { return nil }
+func (NoopHookPipeline) AfterInput(input *AgentInput) error                           { return nil }
+func (NoopHookPipeline) BeforeOutput(req *AgentRunRequest, output *AgentOutput) error { return nil }
+func (NoopHookPipeline) AfterOutput(result *AgentRun) error                           { return nil }
 
 // CompositeHookPipeline 将多个 HookPipeline 串联为一个管线。
 type CompositeHookPipeline struct {
@@ -68,9 +76,9 @@ func (p *CompositeHookPipeline) AfterInput(input *AgentInput) error {
 }
 
 // BeforeOutput 按注册顺序执行所有输出提交前 Hook。
-func (p *CompositeHookPipeline) BeforeOutput(output *AgentOutput) error {
+func (p *CompositeHookPipeline) BeforeOutput(req *AgentRunRequest, output *AgentOutput) error {
 	for _, hook := range p.hooks {
-		if err := hook.BeforeOutput(output); err != nil {
+		if err := hook.BeforeOutput(req, output); err != nil {
 			return err
 		}
 	}
@@ -86,6 +94,52 @@ func (p *CompositeHookPipeline) AfterOutput(result *AgentRun) error {
 	}
 	return nil
 }
+
+type WebSocketAgentMessage struct {
+	Type      string         `json:"type"`       // 消息类型
+	Event     string         `json:"event"`      // 事件类型
+	SessionID ID             `json:"session_id"` // 会话ID
+	RoomID    ID             `json:"room_id"`    // 房间ID
+	EventID   ID             `json:"event_id"`   // 事件ID
+	AgentID   ID             `json:"agent_id"`   // Agent ID
+	RunID     ID             `json:"run_id"`     // 运行记录ID
+	Status    AgentRunStatus `json:"status"`     // 运行状态
+	Role      MessageRole    `json:"role"`       // 消息角色
+	Content   string         `json:"content"`    // 消息内容
+	Timestamp int64          `json:"timestamp"`  // 时间戳
+}
+
+type WebSocketHook struct {
+	hub *websocket.Hub
+}
+
+func NewWebSocketHook(hub *websocket.Hub) *WebSocketHook {
+	return &WebSocketHook{hub: hub}
+}
+
+func (h *WebSocketHook) BeforeInput(req *AgentRunRequest) error { return nil }
+func (h *WebSocketHook) AfterInput(input *AgentInput) error     { return nil }
+
+func (h *WebSocketHook) BeforeOutput(req *AgentRunRequest, output *AgentOutput) error {
+	if h == nil || h.hub == nil || req == nil || output == nil {
+		return nil
+	}
+	for _, draft := range output.Messages {
+		if draft.Content == "" {
+			continue
+		}
+		message := WebSocketAgentMessage{Type: "stream", Event: "content_delta", SessionID: req.Session.ID, RoomID: req.Room.ID, EventID: req.Event.ID, AgentID: req.Agent.ID(), RunID: req.RunID, Status: output.Status, Role: draft.Role, Content: draft.Content, Timestamp: time.Now().Unix()}
+		data, err := json.Marshal(message)
+		if err != nil {
+			logger.Error("creative agent 输出消息序列化失败", map[string]interface{}{"error": err.Error()})
+			continue
+		}
+		h.hub.BroadcastJson(data)
+	}
+	return nil
+}
+
+func (h *WebSocketHook) AfterOutput(result *AgentRun) error { return nil }
 
 // ContextBuilder 根据 ContextPolicy 组装 Agent 输入。
 type ContextBuilder struct {

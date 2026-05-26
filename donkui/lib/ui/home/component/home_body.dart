@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../l10n/generated/app_localizations.dart';
 import '../home_controller.dart';
 import 'chat_list.dart';
 
@@ -17,16 +18,16 @@ class _HomeBodyState extends State<HomeBody> {
   final controller = Get.find<HomeController>();
 
   /// 构建欢迎标题区域
-  /// 显示主标题"Hi，我是donk"和副标题"随时随地，帮您高效干活"
   Widget title() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: EdgeInsets.only(top: 40),
       child: Column(
         children: [
           /// 主标题
-          const Text(
-            'Hi，我是Donk',
-            style: TextStyle(
+          Text(
+            l10n.welcomeTitle,
+            style: const TextStyle(
               fontSize: 36,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
@@ -34,9 +35,9 @@ class _HomeBodyState extends State<HomeBody> {
           ),
 
           /// 副标题
-          const Text(
-            '随时随地，帮您高效干活',
-            style: TextStyle(fontSize: 18, color: Colors.grey),
+          Text(
+            l10n.welcomeSubtitle,
+            style: const TextStyle(fontSize: 18, color: Colors.grey),
           ),
         ],
       ),
@@ -44,8 +45,8 @@ class _HomeBodyState extends State<HomeBody> {
   }
 
   /// 构建功能卡片区域
-  /// 横向排列5个功能卡片：安装Skill、邮件管理、整理桌面、安排日程、手机远程办公
   Widget body() {
+    final l10n = AppLocalizations.of(context)!;
     /// 每个卡片的固定宽度
     double cw = 160.0;
     return Container(
@@ -62,8 +63,8 @@ class _HomeBodyState extends State<HomeBody> {
             icon: Icons.laptop,
             iconBgColor: const Color(0xFFE8E0FF),
             iconColor: const Color(0xFF8B5CF6),
-            title: '安装你的第一个Skill',
-            description: '一键教你安装超能力',
+            title: l10n.installFirstSkill,
+            description: l10n.installFirstSkillDesc,
             cardBgColor: const Color(0xFFF9F5FF),
             cardWidth: cw,
           ),
@@ -73,8 +74,8 @@ class _HomeBodyState extends State<HomeBody> {
             icon: Icons.email,
             iconBgColor: const Color(0xFFFFE8E0),
             iconColor: const Color(0xFFF97316),
-            title: '邮件管理',
-            description: '帮你高效处理邮件',
+            title: l10n.emailManagement,
+            description: l10n.emailManagementDesc,
             cardBgColor: const Color(0xFFFFF5F0),
             cardWidth: cw,
           ),
@@ -84,8 +85,8 @@ class _HomeBodyState extends State<HomeBody> {
             icon: Icons.cleaning_services,
             iconBgColor: const Color(0xFFE0FFF0),
             iconColor: const Color(0xFF10B981),
-            title: '整理桌面',
-            description: '还你清爽电脑桌面',
+            title: l10n.organizeDesktop,
+            description: l10n.organizeDesktopDesc,
             cardBgColor: const Color(0xFFF0FFF5),
             cardWidth: cw,
           ),
@@ -95,8 +96,8 @@ class _HomeBodyState extends State<HomeBody> {
             icon: Icons.calendar_today,
             iconBgColor: const Color(0xFFFFF0E8),
             iconColor: const Color(0xFFEF4444),
-            title: '安排日程',
-            description: '一句话约日程定会议',
+            title: l10n.scheduleManagement,
+            description: l10n.scheduleManagementDesc,
             cardBgColor: const Color(0xFFFFF5F0),
             cardWidth: cw,
           ),
@@ -106,8 +107,8 @@ class _HomeBodyState extends State<HomeBody> {
             icon: Icons.phone_android,
             iconBgColor: const Color(0xFFE0F4FF),
             iconColor: const Color(0xFF3B82F6),
-            title: '手机远程办公',
-            description: '随时处理在线任务',
+            title: l10n.remoteWork,
+            description: l10n.remoteWorkDesc,
             cardBgColor: const Color(0xFFF0F8FF),
             cardWidth: cw,
           ),

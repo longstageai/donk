@@ -1,6 +1,7 @@
 import 'package:donk/app/layout/app_dialog.dart';
 import 'package:flutter/material.dart';
 import '../../common/service/token_service.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// Token用量统计页面
 /// 显示用户的对话统计数据和Token使用详情
@@ -255,7 +256,7 @@ class _TokenPageState extends State<TokenPage> {
         children: [
           Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
           const SizedBox(height: 16),
-          ElevatedButton(onPressed: _loadData, child: const Text('重新加载')),
+          ElevatedButton(onPressed: _loadData, child: Text(AppLocalizations.of(context)!.reload)),
         ],
       ),
     );
@@ -266,9 +267,9 @@ class _TokenPageState extends State<TokenPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          '用量统计',
-          style: TextStyle(
+        Text(
+          AppLocalizations.of(context)!.tokenStats,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
@@ -289,14 +290,15 @@ class _TokenPageState extends State<TokenPage> {
 
   /// 构建说明文字
   Widget _buildDescription() {
-    return const Text(
-      '仅统计默认大模型的用量数据；不包含自定义模型数据',
-      style: TextStyle(fontSize: 12, color: Colors.grey),
+    return Text(
+      AppLocalizations.of(context)!.tokenStatsDesc,
+      style: const TextStyle(fontSize: 12, color: Colors.grey),
     );
   }
 
   /// 构建统计数据卡片
   Widget _buildStatisticsCard() {
+    final l10n = AppLocalizations.of(context)!;
     final isLimited = _statistics['isLimited'] as bool;
     final usagePercent = (_statistics['usagePercent'] as num).toDouble();
 
@@ -312,13 +314,13 @@ class _TokenPageState extends State<TokenPage> {
           /// 今日消耗Token
           _buildStatItem(
             value: _formatNumber(_statistics['todayConsumedTokens'] as int),
-            label: '今日消耗Token',
+            label: l10n.todayTokenUsed,
           ),
 
           /// 今日剩余Token
           _buildStatItem(
             value: _formatNumber(_statistics['todayRemainingTokens'] as int),
-            label: '今日剩余Token',
+            label: l10n.todayTokenRemaining,
             showInfoIcon: true,
           ),
 
@@ -326,10 +328,10 @@ class _TokenPageState extends State<TokenPage> {
           if (isLimited)
             _buildStatItem(
               value: '${(100 - usagePercent).toStringAsFixed(1)}%',
-              label: '剩余百分比',
+              label: l10n.remainingPercent,
             )
           else
-            _buildStatItem(value: '无限制', label: '剩余百分比'),
+            _buildStatItem(value: l10n.unlimited, label: l10n.remainingPercent),
         ],
       ),
     );
@@ -368,9 +370,9 @@ class _TokenPageState extends State<TokenPage> {
 
   /// 构建Token使用详情标题
   Widget _buildDetailTitle() {
-    return const Text(
-      'Token使用详情',
-      style: TextStyle(
+    return Text(
+      AppLocalizations.of(context)!.tokenUsageDetails,
+      style: const TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.bold,
         color: Colors.black87,
@@ -386,10 +388,10 @@ class _TokenPageState extends State<TokenPage> {
           color: const Color(0xFFF8F8F8),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: const Center(
+        child: Center(
           child: Text(
-            '暂无数据',
-            style: TextStyle(fontSize: 14, color: Colors.grey),
+            AppLocalizations.of(context)!.noData,
+            style: const TextStyle(fontSize: 14, color: Colors.grey),
           ),
         ),
       );

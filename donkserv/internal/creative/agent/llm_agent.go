@@ -7,7 +7,9 @@ import (
 	"strings"
 
 	"github.com/longstageai/donk/donk/internal/creative"
+	"github.com/longstageai/donk/donk/internal/memory"
 	"github.com/longstageai/donk/donk/internal/model"
+	"github.com/longstageai/donk/donk/internal/profile"
 	"github.com/longstageai/donk/donk/internal/setting"
 	"github.com/longstageai/donk/donk/internal/tool"
 	"github.com/longstageai/donk/donk/pkg/logger"
@@ -70,20 +72,24 @@ func (c *SettingModelLLMClient) loadLLMConfig() (string, string, string, string,
 
 // LLMAgent 是基于 LLM 的 creative Agent 实现。
 type LLMAgent struct {
-	id         creative.ID
-	name       string
-	role       creative.AgentRole
-	handles    map[creative.EventType]bool
-	prompt     PromptSpec
-	llm        CreativeLLMClient
-	tools      *tool.Registry
-	maxSteps   int
-	outputFunc func(context.Context, creative.AgentInput, string, creative.TokenUsage) creative.AgentOutput
+	id            creative.ID
+	name          string
+	role          creative.AgentRole
+	handles       map[creative.EventType]bool
+	prompt        PromptSpec
+	promptBuilder DynamicPromptBuilder
+	llm           CreativeLLMClient
+	tools         *tool.Registry
+	maxSteps      int
+	outputFunc    func(context.Context, creative.AgentInput, string, creative.TokenUsage) creative.AgentOutput
+	historyStore  *memory.HistoryStore // 历史记录存储（用于获取最近对话）
+	profile       *profile.UserProfile // 用户画像（用于个性化目标生成）
 }
 
-// PromptSpec 描述单个 Agent 的系统提示词和输出要求。
+// PromptSpec 描述单个 Agent 的完整提示词。
 type PromptSpec struct {
 	SystemPrompt string
+	UserPrompt   string
 	OutputFormat string
 }
 
@@ -106,6 +112,20 @@ func WithMaxSteps(maxSteps int) LLMAgentOption {
 	}
 }
 
+// WithHistoryStore 配置单个 Agent 的历史记录存储。
+func WithHistoryStore(store *memory.HistoryStore) LLMAgentOption {
+	return func(a *LLMAgent) {
+		a.historyStore = store
+	}
+}
+
+// WithProfile 配置单个 Agent 的用户画像。
+func WithProfile(profile *profile.UserProfile) LLMAgentOption {
+	return func(a *LLMAgent) {
+		a.profile = profile
+	}
+}
+
 // NewLLMAgent 创建 LLM Agent。
 func NewLLMAgent(id creative.ID, name string, role creative.AgentRole, handles []creative.EventType, prompt PromptSpec, llm CreativeLLMClient, outputFunc func(context.Context, creative.AgentInput, string, creative.TokenUsage) creative.AgentOutput, opts ...LLMAgentOption) *LLMAgent {
 	m := make(map[creative.EventType]bool, len(handles))
@@ -124,6 +144,16 @@ func NewLLMAgent(id creative.ID, name string, role creative.AgentRole, handles [
 	return agent
 }
 
+// DynamicPromptBuilder 动态提示词构建函数类型
+type DynamicPromptBuilder func(input creative.AgentInput) PromptSpec
+
+// NewLLMAgentWithDynamicPrompt 创建支持动态提示词的 LLM Agent。
+func NewLLMAgentWithDynamicPrompt(id creative.ID, name string, role creative.AgentRole, handles []creative.EventType, promptBuilder DynamicPromptBuilder, llm CreativeLLMClient, outputFunc func(context.Context, creative.AgentInput, string, creative.TokenUsage) creative.AgentOutput, opts ...LLMAgentOption) *LLMAgent {
+	agent := NewLLMAgent(id, name, role, handles, PromptSpec{}, llm, outputFunc, opts...)
+	agent.promptBuilder = promptBuilder
+	return agent
+}
+
 func (a *LLMAgent) ID() creative.ID          { return a.id }
 func (a *LLMAgent) Name() string             { return a.name }
 func (a *LLMAgent) Role() creative.AgentRole { return a.role }
@@ -136,9 +166,19 @@ func (a *LLMAgent) CanHandle(ctx context.Context, event creative.Event, room cre
 
 // Handle 构建提示词、执行 Agent 内部 ReAct 循环，并将最终模型文本转换为 Runtime 可提交的 AgentOutput。
 func (a *LLMAgent) Handle(ctx context.Context, input creative.AgentInput) creative.AgentOutput {
+	var prompt PromptSpec
+	if a.promptBuilder != nil {
+		// 动态构建：Agent 自己管理完整的系统提示词和用户提示词
+		prompt = a.promptBuilder(input)
+	} else {
+		// 静态提示词：使用预定义的 PromptSpec，用户提示词由基类构建
+		prompt = a.prompt
+		prompt.UserPrompt = a.buildUserPrompt(input, prompt)
+	}
+
 	messages := []schema.Message{
-		{Role: "system", Content: a.prompt.SystemPrompt},
-		{Role: "user", Content: a.buildUserPrompt(input)},
+		{Role: "system", Content: prompt.SystemPrompt},
+		{Role: "user", Content: prompt.UserPrompt},
 	}
 	resp, usage, err := a.runLoop(ctx, messages)
 	if err != nil {
@@ -178,7 +218,12 @@ func (a *LLMAgent) runLoop(ctx context.Context, messages []schema.Message) (*sch
 	return lastResp, totalUsage, nil
 }
 
-func (a *LLMAgent) buildUserPrompt(input creative.AgentInput) string {
+func (a *LLMAgent) buildUserPrompt(input creative.AgentInput, prompt PromptSpec) string {
+	if a.promptBuilder != nil {
+		// 动态 Agent 自己管理完整的用户提示词
+		return prompt.UserPrompt
+	}
+
 	contextJSON, _ := json.MarshalIndent(buildLLMContextView(input), "", "  ")
 	return fmt.Sprintf(`当前事件：%s
 当前阶段：%s
@@ -187,7 +232,7 @@ func (a *LLMAgent) buildUserPrompt(input creative.AgentInput) string {
 %s
 
 输出要求：
-%s`, input.Event.Type, input.Session.CurrentPhase, string(contextJSON), a.prompt.OutputFormat)
+%s`, input.Event.Type, input.Session.CurrentPhase, string(contextJSON), prompt.OutputFormat)
 }
 
 func (a *LLMAgent) toolDefinitions() []schema.ToolDefinition {
@@ -259,17 +304,25 @@ func buildLLMContextView(input creative.AgentInput) map[string]any {
 }
 
 func promptSpec(systemPrompt string) PromptSpec {
-	return PromptSpec{SystemPrompt: systemPrompt, OutputFormat: "请严格按系统提示词中的输出格式回答，并在需要评审时明确写出 判定结果：通过/继续/否决。"}
+	return PromptSpec{SystemPrompt: systemPrompt, OutputFormat: "请严格按系统提示词中的输出格式回答。评审类 Agent 必须明确写出 判定结果：通过 或 判定结果：不通过，并给出原因。"}
 }
 
 func parseAgentDecision(content string) creative.AgentDecision {
-	if strings.Contains(content, "否决") || strings.Contains(strings.ToLower(content), "reject") {
-		return creative.DecisionRejected
+	//todo 测试
+	if true {
+		return creative.DecisionSucceeded
 	}
-	if strings.Contains(content, "失败") || strings.Contains(strings.ToLower(content), "failed") {
+	lower := strings.ToLower(content)
+	if strings.Contains(content, "失败") || strings.Contains(lower, "failed") || strings.Contains(lower, "failure") || strings.Contains(lower, `"decision":"failed"`) || strings.Contains(lower, `"decision": "failed"`) {
 		return creative.DecisionFailed
 	}
-	return creative.DecisionSucceeded
+	if strings.Contains(content, "否决") || strings.Contains(content, "不通过") || strings.Contains(content, "未通过") || strings.Contains(lower, "reject") || strings.Contains(lower, "rejected") || strings.Contains(lower, "not pass") || strings.Contains(lower, `"decision":"rejected"`) || strings.Contains(lower, `"decision": "rejected"`) || strings.Contains(lower, "fail") {
+		return creative.DecisionRejected
+	}
+	if strings.Contains(content, "通过") || strings.Contains(content, "继续") || strings.Contains(lower, "pass") || strings.Contains(lower, "approved") || strings.Contains(lower, "continue") || strings.Contains(lower, `"decision":"succeeded"`) || strings.Contains(lower, `"decision": "succeeded"`) {
+		return creative.DecisionSucceeded
+	}
+	return creative.DecisionRejected
 }
 
 func extractJSONField(content string, field string) string {

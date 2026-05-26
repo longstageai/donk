@@ -58,6 +58,20 @@ func NewAgentBuilder(app *appctx.Application, db *sql.DB, sched *scheduler.Sched
 	return &AgentBuilder{app: app, db: db, scheduler: sched}
 }
 
+// WithHistoryStore 设置历史记录存储
+// 用于外部传入已创建的 HistoryStore，实现共享
+func (b *AgentBuilder) WithHistoryStore(store *memory.HistoryStore) *AgentBuilder {
+	b.historyStore = store
+	return b
+}
+
+// WithProfileManager 设置用户画像管理器
+// 用于外部传入已创建的 ProfileManager，实现共享
+func (b *AgentBuilder) WithProfileManager(profileMgr *profile.ProfileManager) *AgentBuilder {
+	b.profileMgr = profileMgr
+	return b
+}
+
 // Build 构建Agent实例
 // 按依赖顺序依次初始化各个组件，返回配置好的Agent实例
 func (b *AgentBuilder) Build() *agent.Agent {
@@ -216,7 +230,14 @@ func (b *AgentBuilder) initMemory() error {
 
 // initHistory 初始化历史记录存储
 // 从数据库 ConfigProvider 读取配置，确保使用最新配置
+// 如果外部已通过 WithHistoryStore 传入 HistoryStore，则跳过创建
 func (b *AgentBuilder) initHistory() error {
+	// 如果外部已传入 HistoryStore，跳过创建
+	if b.historyStore != nil {
+		logger.Info("使用外部传入的 HistoryStore", nil)
+		return nil
+	}
+
 	provider := setting.GetProvider()
 	if provider == nil {
 		return fmt.Errorf("ConfigProvider 未初始化")
@@ -259,7 +280,14 @@ func (b *AgentBuilder) initProviderCache() {
 }
 
 // initProfile 初始化用户画像管理器
+// 如果外部已通过 WithProfileManager 传入 ProfileManager，则跳过创建
 func (b *AgentBuilder) initProfile() error {
+	// 如果外部已传入 ProfileManager，跳过创建
+	if b.profileMgr != nil {
+		logger.Info("使用外部传入的 ProfileManager", nil)
+		return nil
+	}
+
 	// 创建数据库存储（表结构由 sql/setting.go 统一管理）
 	storage := profile.NewDBStorage(b.db)
 
@@ -547,8 +575,17 @@ func (b *AgentBuilder) createAgent() *agent.Agent {
 
 // NewAgent 创建Agent实例的入口函数
 // 封装了AgentBuilder的构建过程
-func NewAgent(app *appctx.Application, db *sql.DB, sched *scheduler.Scheduler) (*agent.Agent, error) {
-	agentInstance := NewAgentBuilder(app, db, sched).Build()
+func NewAgent(app *appctx.Application, db *sql.DB, sched *scheduler.Scheduler, historyStore *memory.HistoryStore, profileMgr *profile.ProfileManager) (*agent.Agent, error) {
+	builder := NewAgentBuilder(app, db, sched)
+	// 如果传入了 HistoryStore，使用它
+	if historyStore != nil {
+		builder.WithHistoryStore(historyStore)
+	}
+	// 如果传入了 ProfileManager，使用它
+	if profileMgr != nil {
+		builder.WithProfileManager(profileMgr)
+	}
+	agentInstance := builder.Build()
 	if agentInstance == nil {
 		return nil, fmt.Errorf("Agent初始化失败")
 	}
@@ -635,8 +672,9 @@ func (b *TaskAgentBuilder) initTools() {
 // NewAgentSvc 创建AgentService实例的入口函数
 // 参数app是应用程序上下文，db是数据库连接，sched是调度器，engine是gin引擎实例用于注册路由
 // 内部创建Agent实例，注册SSE聊天路由，并返回AgentService
-func NewAgentSvc(app *appctx.Application, db *sql.DB, sched *scheduler.Scheduler, engine *gin.Engine) (*agent.AgentService, error) {
-	agentInstance, err := NewAgent(app, db, sched)
+// 如果传入 historyStore 和 profileMgr，则会共享使用
+func NewAgentSvc(app *appctx.Application, db *sql.DB, sched *scheduler.Scheduler, engine *gin.Engine, historyStore *memory.HistoryStore, profileMgr *profile.ProfileManager) (*agent.AgentService, error) {
+	agentInstance, err := NewAgent(app, db, sched, historyStore, profileMgr)
 	if err != nil {
 		return nil, err
 	}

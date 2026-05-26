@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../common/service/task_service.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'task_model.dart';
 
 /// 任务运行记录页面
@@ -150,24 +151,25 @@ class _TaskRunsViewState extends State<TaskRunsView> {
 
   /// 删除运行记录
   Future<void> _deleteRun(TaskHistory run) async {
+    final l10n = AppLocalizations.of(context)!;
     // 显示确认对话框
     final confirmed = await showDialog<bool>(
       context: context,
       builder:
           (context) => AlertDialog(
-            title: const Text('确认删除'),
+            title: Text(l10n.confirmDelete),
             content: Text(
-              '确定要删除这条运行记录吗？\n\n执行ID: ${_truncateId(run.id)}\n执行时间: ${_formatDateTime(run.executeTime)}',
+              l10n.deleteRunConfirmMessage(_truncateId(run.id), _formatDateTime(run.executeTime)),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('取消'),
+                child: Text(l10n.cancel),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
                 style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('删除'),
+                child: Text(l10n.delete),
               ),
             ],
           ),
@@ -180,7 +182,7 @@ class _TaskRunsViewState extends State<TaskRunsView> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('运行记录已删除')));
+        ).showSnackBar(SnackBar(content: Text(l10n.runRecordDeleted)));
       }
       // 从列表中移除
       setState(() {
@@ -191,7 +193,7 @@ class _TaskRunsViewState extends State<TaskRunsView> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('删除失败: $e')));
+        ).showSnackBar(SnackBar(content: Text('${l10n.deleteFailed}: $e')));
       }
     }
   }
@@ -219,7 +221,7 @@ class _TaskRunsViewState extends State<TaskRunsView> {
               ),
             ),
             Text(
-              '运行记录',
+              AppLocalizations.of(context)!.runRecords,
               style: TextStyle(fontSize: 12, color: Colors.grey[600]),
             ),
           ],
@@ -262,13 +264,14 @@ class _TaskRunsViewState extends State<TaskRunsView> {
   }
 
   String _getStatusDisplayName(String status) {
+    final l10n = AppLocalizations.of(context)!;
     switch (status) {
       case 'done':
-        return '已完成';
+        return l10n.statusDone;
       case 'failed':
-        return '失败';
+        return l10n.statusFailed;
       case 'running':
-        return '执行中';
+        return l10n.statusRunning;
       default:
         return status;
     }
@@ -298,7 +301,7 @@ class _TaskRunsViewState extends State<TaskRunsView> {
                 ),
               ),
               const SizedBox(height: 24),
-              ElevatedButton(onPressed: _loadRuns, child: const Text('重试')),
+              ElevatedButton(onPressed: _loadRuns, child: Text(AppLocalizations.of(context)!.retry)),
             ],
           ),
         ),
@@ -306,13 +309,13 @@ class _TaskRunsViewState extends State<TaskRunsView> {
     }
 
     if (_runs.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.play_circle_outline, size: 48, color: Colors.grey),
-            SizedBox(height: 16),
-            Text('暂无运行记录', style: TextStyle(fontSize: 14, color: Colors.grey)),
+            const Icon(Icons.play_circle_outline, size: 48, color: Colors.grey),
+            const SizedBox(height: 16),
+            Text(AppLocalizations.of(context)!.noRunRecords, style: const TextStyle(fontSize: 14, color: Colors.grey)),
           ],
         ),
       );

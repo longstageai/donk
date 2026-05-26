@@ -1,6 +1,7 @@
 import 'package:donk/app/layout/app_dialog.dart';
 import 'package:flutter/material.dart';
 import '../../common/service/setting_service.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// LLM 配置页面
 class LLMConfigPage extends StatefulWidget {
@@ -171,9 +172,9 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'LLM 配置',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context)!.llmSettings,
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
@@ -203,7 +204,7 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                                   color: Colors.white,
                                 ),
                               )
-                              : const Text('保存'),
+                              : Text(AppLocalizations.of(context)!.save),
                     ),
                   const SizedBox(width: 12),
 
@@ -241,56 +242,59 @@ class _LLMConfigPageState extends State<LLMConfigPage> {
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: _loadConfig,
-                      child: const Text('重新加载'),
+                      child: Text(AppLocalizations.of(context)!.reload),
                     ),
                   ],
                 ),
               ),
             )
           else
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildDropdownField(
-                      label: '提供商',
-                      value:
-                          _providerConfigs.containsKey(_providerController.text)
-                              ? _providerController.text
-                              : 'openai',
-                      items: _providerConfigs.keys.toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          setState(() {
-                            _providerController.text = value;
-                            final config = _providerConfigs[value]!;
-                            _baseUrlController.text = config['defaultBaseUrl']!;
-                            _modelController.text = config['defaultModel']!;
-                          });
-                        }
-                      },
-                    ),
-                    _buildTextField(
-                      label: '模型名称',
-                      controller: _modelController,
-                      hintText: '如: gpt-4o-mini',
-                    ),
-                    _buildTextField(
-                      label: 'API Key',
-                      controller: _apiKeyController,
-                      hintText: '输入 API Key',
-                      isPassword: true,
-                    ),
-                    _buildTextField(
-                      label: 'Base URL',
-                      controller: _baseUrlController,
-                      hintText: '可选，留空使用默认地址',
-                    ),
-                  ],
+            Builder(builder: (context) {
+              final l10n = AppLocalizations.of(context)!;
+              return Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildDropdownField(
+                        label: l10n.provider,
+                        value:
+                            _providerConfigs.containsKey(_providerController.text)
+                                ? _providerController.text
+                                : 'openai',
+                        items: _providerConfigs.keys.toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() {
+                              _providerController.text = value;
+                              final config = _providerConfigs[value]!;
+                              _baseUrlController.text = config['defaultBaseUrl']!;
+                              _modelController.text = config['defaultModel']!;
+                            });
+                          }
+                        },
+                      ),
+                      _buildTextField(
+                        label: l10n.modelName,
+                        controller: _modelController,
+                        hintText: l10n.modelNameHint,
+                      ),
+                      _buildTextField(
+                        label: l10n.apiKey,
+                        controller: _apiKeyController,
+                        hintText: l10n.apiKeyHint,
+                        isPassword: true,
+                      ),
+                      _buildTextField(
+                        label: l10n.baseUrl,
+                        controller: _baseUrlController,
+                        hintText: l10n.baseUrlHint,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ),
+              );
+            }),
         ],
       ),
     );

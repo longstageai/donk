@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/generated/app_localizations.dart';
+
 /// Agent详情抽屉组件
 /// 从屏幕右侧滑出的抽屉，显示Agent信息和设置
 class HomeDrawer extends StatefulWidget {
@@ -12,6 +14,7 @@ class HomeDrawer extends StatefulWidget {
 class _HomeDrawerState extends State<HomeDrawer> {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: 300,
       color: Colors.white,
@@ -28,9 +31,9 @@ class _HomeDrawerState extends State<HomeDrawer> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // 标题
-                const Text(
-                  'Agent 详情',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                Text(
+                  l10n.agentDetails,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
 
                 // 返回按钮
@@ -73,20 +76,20 @@ class _HomeDrawerState extends State<HomeDrawer> {
                       const SizedBox(width: 12),
 
                       // Agent名称和描述
-                      const Column(
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'donk',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Text(
-                            '随时随地，帮您高效干活',
-                            style: TextStyle(
+                            l10n.welcomeSubtitle,
+                            style: const TextStyle(
                               fontSize: 14,
                               color: Color(0xFF666666),
                             ),
@@ -99,9 +102,9 @@ class _HomeDrawerState extends State<HomeDrawer> {
                   const SizedBox(height: 24),
 
                   // Agent设定区域
-                  const Text(
-                    'Agent 设定',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  Text(
+                    l10n.agentSettings,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 12),
 
@@ -109,7 +112,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
                   TextField(
                     maxLines: 6,
                     decoration: InputDecoration(
-                      hintText: '官方默认Agent',
+                      hintText: l10n.defaultAgentHint,
                       hintStyle: const TextStyle(
                         fontSize: 14,
                         color: Color(0xFF999999),
@@ -130,9 +133,9 @@ class _HomeDrawerState extends State<HomeDrawer> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        '灵感',
-                        style: TextStyle(
+                      Text(
+                        l10n.idea,
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -155,15 +158,15 @@ class _HomeDrawerState extends State<HomeDrawer> {
                       border: Border.all(color: const Color(0xFFE0E0E0)),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.calendar_today,
                           size: 16,
                           color: Color(0xFF666666),
                         ),
-                        SizedBox(width: 8),
-                        Text('日程任务全管理', style: TextStyle(fontSize: 14)),
+                        const SizedBox(width: 8),
+                        Text(l10n.scheduleTaskManagement, style: const TextStyle(fontSize: 14)),
                       ],
                     ),
                   ),

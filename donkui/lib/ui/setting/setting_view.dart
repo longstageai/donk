@@ -5,6 +5,7 @@ import 'package:donk/ui/setting/llm_config_page.dart';
 import 'package:donk/ui/setting/agent_config_page.dart';
 import 'package:donk/ui/setting/embedding_config_page.dart';
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// 设置视图组件
 /// 包含左侧菜单导航和右侧设置页面内容
@@ -24,18 +25,21 @@ class _SettingsDialogState extends State<SettingView> {
   late int _selectedIndex;
 
   /// 菜单项数据模型
-  final List<_MenuItemData> _menuItems = [
-    _MenuItemData(index: 0, icon: Icons.settings_outlined, label: '通用设置'),
-    _MenuItemData(index: 1, icon: Icons.pie_chart_outline, label: '用量统计'),
-    _MenuItemData(index: 2, icon: Icons.smart_toy_outlined, label: 'LLM'),
-    _MenuItemData(index: 3, icon: Icons.memory_outlined, label: 'Agent'),
-    _MenuItemData(
-      index: 4,
-      icon: Icons.text_fields_outlined,
-      label: 'Embedding',
-    ),
-    _MenuItemData(index: 5, icon: Icons.info_outline, label: '关于我们'),
-  ];
+  List<_MenuItemData> get _menuItems {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      _MenuItemData(index: 0, icon: Icons.settings_outlined, label: l10n.generalSettings),
+      _MenuItemData(index: 1, icon: Icons.pie_chart_outline, label: l10n.tokenStats),
+      _MenuItemData(index: 2, icon: Icons.smart_toy_outlined, label: l10n.llmSettings),
+      _MenuItemData(index: 3, icon: Icons.memory_outlined, label: l10n.agentSettings),
+      _MenuItemData(
+        index: 4,
+        icon: Icons.text_fields_outlined,
+        label: l10n.embeddingSettings,
+      ),
+      _MenuItemData(index: 5, icon: Icons.info_outline, label: l10n.about),
+    ];
+  }
 
   final List<Widget> _pageItems = [
     SettingPage(),
@@ -81,7 +85,7 @@ class _SettingsDialogState extends State<SettingView> {
   Widget _buildLeftMenu() {
     return Container(
       /// 菜单宽度
-      width: 160,
+      width: 180,
 
       /// 背景色
       color: const Color(0xFFF5F5F5),
@@ -90,11 +94,11 @@ class _SettingsDialogState extends State<SettingView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           /// 菜单标题
-          const Padding(
-            padding: EdgeInsets.only(left: 12, bottom: 20),
+          Padding(
+            padding: const EdgeInsets.only(left: 12, bottom: 20),
             child: Text(
-              '设置',
-              style: TextStyle(
+              AppLocalizations.of(context)!.settings,
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
@@ -144,12 +148,16 @@ class _SettingsDialogState extends State<SettingView> {
                 color: isSelected ? const Color(0xFFFF6B6B) : Colors.grey,
               ),
               const SizedBox(width: 10),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: isSelected ? Colors.black87 : Colors.grey,
-                  fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isSelected ? Colors.black87 : Colors.grey,
+                    fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+                  ),
                 ),
               ),
             ],

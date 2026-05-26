@@ -2,6 +2,7 @@ package setting
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 
 	sqlmodule "github.com/longstageai/donk/donk/internal/sql"
@@ -45,6 +46,34 @@ func InitConfigProvider(db *sql.DB) error {
 	// 初始化睡眠管理器并恢复之前的状态
 	InitSleepManager(db)
 
+	// 初始化 Creative 运行状态（如果不存在则插入默认记录）
+	if err := initCreativeRuntimeState(db); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// initCreativeRuntimeState 初始化 Creative 运行状态表
+// 如果表中不存在记录，则插入默认记录（状态为 running）
+//
+// 参数:
+//   - db: 数据库连接
+//
+// 返回:
+//   - error: 错误信息
+func initCreativeRuntimeState(db *sql.DB) error {
+	var status string
+	err := db.QueryRow("SELECT status FROM creative_runtime_state WHERE id = 1").Scan(&status)
+	if err == sql.ErrNoRows {
+		// 没有记录，插入默认记录
+		_, err = db.Exec("INSERT INTO creative_runtime_state (id, status, updated_at) VALUES (1, 'running', datetime('now'))")
+		if err != nil {
+			return fmt.Errorf("初始化 creative 运行状态失败: %w", err)
+		}
+	} else if err != nil {
+		return fmt.Errorf("查询 creative 运行状态失败: %w", err)
+	}
 	return nil
 }
 

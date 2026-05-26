@@ -5,12 +5,14 @@ import 'package:donk/ui/setting/setting_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../l10n/generated/app_localizations.dart';
 import '../home_controller.dart';
 
 class HomeHeader extends StatefulWidget {
-  final VoidCallback? onTap;
+  /// 点击消息通知抽屉的回调
+  final VoidCallback? onMessageTap;
 
-  const HomeHeader({super.key, this.onTap});
+  const HomeHeader({super.key, this.onMessageTap});
 
   @override
   State<HomeHeader> createState() => _HomeHeaderState();
@@ -80,10 +82,11 @@ class _HomeHeaderState extends State<HomeHeader> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final displayText =
         _isLoading
-            ? '加载中...'
-            : '已使用${_formatNumber(_usedTokens)}，剩余${_remainingPercent == -1 ? 100 : _remainingPercent}%';
+            ? l10n.loading
+            : l10n.tokenUsageStatus(_remainingPercent == -1 ? 100 : _remainingPercent, _formatNumber(_usedTokens));
 
     return SizedBox(
       height: 50,
@@ -93,7 +96,7 @@ class _HomeHeaderState extends State<HomeHeader> {
           const SizedBox(),
           // 中间导航按钮组
           SizedBox(
-            width: 300,
+            width: 400,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -129,15 +132,54 @@ class _HomeHeaderState extends State<HomeHeader> {
                             ),
                           )
                           : const Icon(Icons.refresh, size: 20),
-                  tooltip: '刷新',
+                  tooltip: l10n.refresh,
                 ),
 
                 // 清空消息按钮
                 IconButton(
                   onPressed: () => _showClearConfirmDialog(context),
                   icon: const Icon(Icons.delete, size: 20),
-                  tooltip: '清空消息',
+                  tooltip: l10n.clearMessages,
                 ),
+                // 消息通知按钮（带未读数量徽章）
+                Obx(() {
+                  final unreadCount = controller.unreadNotificationCount.value;
+                  return Stack(
+                    children: [
+                      IconButton(
+                        onPressed: widget.onMessageTap,
+                        icon: const Icon(Icons.camera_rear, size: 20),
+                        tooltip: 'agent',
+                      ),
+                      // 未读数量徽章
+                      if (unreadCount > 0)
+                        Positioned(
+                          right: 4,
+                          top: 4,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 16,
+                              minHeight: 16,
+                            ),
+                            child: Text(
+                              unreadCount > 99 ? '99+' : unreadCount.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                }),
               ],
             ),
           ),

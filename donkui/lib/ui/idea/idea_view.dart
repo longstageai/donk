@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../common/model/skill.dart';
 import '../../common/service/skill_service.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'skill_detail_page.dart';
 
 /// 灵感广场页面
@@ -45,7 +46,7 @@ class _IdeaViewState extends State<IdeaView> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = '加载 Skill 失败: $e';
+        _errorMessage = '${AppLocalizations.of(context)!.loadingFailed}: $e';
         _isLoading = false;
       });
     }
@@ -80,9 +81,10 @@ class _IdeaViewState extends State<IdeaView> {
         }
       });
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('操作失败: $e')));
+        ).showSnackBar(SnackBar(content: Text('${l10n.operationFailed}: $e')));
       }
     }
   }
@@ -97,14 +99,15 @@ class _IdeaViewState extends State<IdeaView> {
       await SkillService.rescanSkills();
       await _loadSkills();
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('扫描完成')));
+        ).showSnackBar(SnackBar(content: Text(l10n.scanComplete)));
       }
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = '扫描失败: $e';
+        _errorMessage = '${AppLocalizations.of(context)!.scanFailed}: $e';
         _isLoading = false;
       });
     }
@@ -115,10 +118,11 @@ class _IdeaViewState extends State<IdeaView> {
     final disabledSkills = _skills.where((s) => !s.enabled).toList();
     if (disabledSkills.isEmpty) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(
-            const SnackBar(content: Text('所有 Skill 已处于启用状态')));
+            SnackBar(content: Text(l10n.allEnabled)));
       }
       return;
     }
@@ -137,8 +141,9 @@ class _IdeaViewState extends State<IdeaView> {
         await SkillService.enableSkill(skill.name);
       }
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('已启用 ${disabledSkills.length} 个 Skill')),
+          SnackBar(content: Text(l10n.enabledCount(disabledSkills.length))),
         );
       }
     } catch (e) {
@@ -146,9 +151,10 @@ class _IdeaViewState extends State<IdeaView> {
       if (!mounted) return;
       await _loadSkills();
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('操作失败: $e')));
+        ).showSnackBar(SnackBar(content: Text('${l10n.operationFailed}: $e')));
       }
     }
   }
@@ -158,10 +164,11 @@ class _IdeaViewState extends State<IdeaView> {
     final enabledSkills = _skills.where((s) => s.enabled).toList();
     if (enabledSkills.isEmpty) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(
-            const SnackBar(content: Text('所有 Skill 已处于禁用状态')));
+            SnackBar(content: Text(l10n.allDisabled)));
       }
       return;
     }
@@ -180,8 +187,9 @@ class _IdeaViewState extends State<IdeaView> {
         await SkillService.disableSkill(skill.name);
       }
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('已禁用 ${enabledSkills.length} 个 Skill')),
+          SnackBar(content: Text(l10n.disabledCount(enabledSkills.length))),
         );
       }
     } catch (e) {
@@ -189,33 +197,35 @@ class _IdeaViewState extends State<IdeaView> {
       if (!mounted) return;
       await _loadSkills();
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('操作失败: $e')));
+        ).showSnackBar(SnackBar(content: Text('${l10n.operationFailed}: $e')));
       }
     }
   }
 
   /// 删除 Skill
   Future<void> _deleteSkill(Skill skill) async {
+    final l10n = AppLocalizations.of(context)!;
     // 显示确认对话框
     final confirmed = await showDialog<bool>(
       context: context,
       builder:
           (context) =>
           AlertDialog(
-            title: const Text('确认删除'),
+            title: Text(l10n.confirmDelete),
             content: Text(
-                '确定要删除 Skill "${skill.name}" 吗？\n\n此操作不可恢复！'),
+                l10n.deleteConfirmMessageSkill(skill.name)),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('取消'),
+                child: Text(l10n.cancel),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
                 style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('删除'),
+                child: Text(l10n.delete),
               ),
             ],
           ),
@@ -228,7 +238,7 @@ class _IdeaViewState extends State<IdeaView> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Skill "${skill.name}" 已删除')));
+        ).showSnackBar(SnackBar(content: Text(l10n.skillDeleted(skill.name))));
       }
       // 重新加载列表
       await _loadSkills();
@@ -236,7 +246,7 @@ class _IdeaViewState extends State<IdeaView> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('删除失败: $e')));
+        ).showSnackBar(SnackBar(content: Text('${l10n.deleteFailed}: $e')));
       }
     }
   }
@@ -322,12 +332,13 @@ class _IdeaViewState extends State<IdeaView> {
 
   /// 构建页面标题
   Widget _buildHeader() {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          '灵感广场',
-          style: TextStyle(
+        Text(
+          l10n.ideaSquare,
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
@@ -343,7 +354,7 @@ class _IdeaViewState extends State<IdeaView> {
                 size: 20,
                 color: Colors.green,
               ),
-              tooltip: '全部开启',
+              tooltip: l10n.enableAll,
             ),
             IconButton(
               onPressed:
@@ -353,21 +364,21 @@ class _IdeaViewState extends State<IdeaView> {
                 size: 18,
                 color: Colors.orange,
               ),
-              tooltip: '全部禁用',
+              tooltip: l10n.disableAll,
             ),
 
             /// 刷新按钮
             IconButton(
               onPressed: _isLoading ? null : _loadSkills,
               icon: const Icon(Icons.refresh, size: 20),
-              tooltip: '刷新列表',
+              tooltip: l10n.refreshList,
             ),
 
             /// 扫描按钮
             IconButton(
               onPressed: _isLoading ? null : _rescanSkills,
               icon: const Icon(Icons.scanner, size: 20),
-              tooltip: '重新扫描',
+              tooltip: l10n.rescan,
             ),
           ],
         ),
@@ -394,7 +405,7 @@ class _IdeaViewState extends State<IdeaView> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            ElevatedButton(onPressed: _loadSkills, child: const Text('重试')),
+            ElevatedButton(onPressed: _loadSkills, child: Text(AppLocalizations.of(context)!.retry)),
           ],
         ),
       );
@@ -421,6 +432,7 @@ class _IdeaViewState extends State<IdeaView> {
 
   /// 构建空状态界面
   Widget _buildEmptyState() {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -428,7 +440,7 @@ class _IdeaViewState extends State<IdeaView> {
           Icon(Icons.extension_outlined, size: 64, color: Colors.grey.shade300),
           const SizedBox(height: 16),
           Text(
-            '暂无 Skill',
+            l10n.noSkill,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w500,
@@ -437,14 +449,14 @@ class _IdeaViewState extends State<IdeaView> {
           ),
           const SizedBox(height: 8),
           Text(
-            '点击右上角扫描按钮发现 Skill',
+            l10n.clickScanToDiscover,
             style: TextStyle(fontSize: 14, color: Colors.grey.shade400),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: _rescanSkills,
             icon: const Icon(Icons.scanner, size: 18),
-            label: const Text('重新扫描'),
+            label: Text(l10n.rescan),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF333333),
               foregroundColor: Colors.white,

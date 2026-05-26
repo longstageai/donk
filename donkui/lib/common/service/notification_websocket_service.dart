@@ -16,9 +16,13 @@ class NotificationWebSocketService extends GetxService {
       NotificationStorageService();
   final WeChatBotService _wechatService = WeChatBotService();
 
-  /// 消息流，用于监听新消息
+  /// 普通通知消息流，用于监听新消息
   final StreamController<NotificationMessage> _messageController =
       StreamController<NotificationMessage>.broadcast();
+
+  /// Stream类型消息流，用于监听Stream消息
+  final StreamController<Map<String, dynamic>> _streamMessageController =
+      StreamController<Map<String, dynamic>>.broadcast();
 
   /// 未读消息数量
   final RxInt unreadCount = 0.obs;
@@ -29,11 +33,17 @@ class NotificationWebSocketService extends GetxService {
   /// 服务器地址（从配置获取）
   String? _serverUrl;
 
-  /// 消息列表（按时间倒序排列）
+  /// 普通通知消息列表（按时间倒序排列）
   final RxList<NotificationMessage> messages = <NotificationMessage>[].obs;
 
-  /// 消息流
+  /// Stream类型消息列表（按时间倒序排列）
+  final RxList<Map<String, dynamic>> streamMessages = <Map<String, dynamic>>[].obs;
+
+  /// 普通消息流
   Stream<NotificationMessage> get messageStream => _messageController.stream;
+
+  /// Stream消息流
+  Stream<Map<String, dynamic>> get streamMessageStream => _streamMessageController.stream;
 
   /// 初始化服务
   Future<void> init() async {
@@ -126,7 +136,10 @@ class NotificationWebSocketService extends GetxService {
   }
 
   /// 处理接收到的消息
-  /// 支持格式: {"type": "notification", "id": "xxx", "title": "xxx", "content": "xxx", "level": "info|success|warning|error"}
+  /// 支持三种格式:
+  /// 1. 通知格式: {"type": "notification", "id": "xxx", "title": "xxx", "content": "xxx", "level": "info|success|warning|error"}
+  /// 2. 标准格式: {"type": "message", "data": {"id": "xxx", "title": "xxx", "content": "xxx", ...}}
+  /// 3. Stream格式: {"type": "stream", "event": "content_delta", "content": "xxx", "agent_id": "xxx", ...}
   void _onMessage(WebSocketMessage wsMessage) {
     if (kDebugMode) {
       print(
@@ -135,60 +148,41 @@ class NotificationWebSocketService extends GetxService {
     }
 
     try {
-      // 只处理通知类型的消息
-      if (wsMessage.type != 'pong') {
-        final notification = NotificationMessage(
-          id:
-              wsMessage.rawData?['id']?.toString() ??
-              DateTime.now().millisecondsSinceEpoch.toString(),
-          title: wsMessage.rawData?['title']?.toString() ?? '新消息',
-          content:
-              wsMessage.rawData?['content']?.toString() ??
-              wsMessage.content ??
-              '',
-          level: wsMessage.rawData?['level']?.toString() ?? 'info',
-          timestamp: DateTime.now(),
-          isRead: false,
-          extraData: wsMessage.rawData?['extraData'] as Map<String, dynamic>?,
-        );
-
+      // 忽略心跳消息
+      if (wsMessage.type == 'pong') {
         if (kDebugMode) {
-          print(
-            'Creating notification: id=${notification.id}, title=${notification.title}',
-          );
+          print('Received pong, ignoring');
         }
+        return;
+      }
 
-        // 保存到本地并更新列表
-        _storageService
-            .addMessage(notification)
-            .then((_) {
-              // 添加到消息列表头部（最新的在前面）
-              messages.insert(0, notification);
-
-              // 更新未读数量
-              unreadCount.value++;
-
-              // 通知监听者
-              _messageController.add(notification);
-
-              // 推送到微信（如果微信已登录）
-              _pushToWeChat(notification);
-
-              if (kDebugMode) {
-                print('Notification processed successfully');
-              }
-            })
-            .catchError((e) {
-              if (kDebugMode) {
-                print('Error saving notification: $e');
-              }
-            });
-      } else {
-        if (kDebugMode) {
-          print(
-            'Message type "${wsMessage.type}" is not notification or message, ignoring',
-          );
-        }
+      // 根据消息类型分别处理
+      switch (wsMessage.type) {
+        case 'notification':
+          // 格式1: 直接包含字段的notification类型
+          _handleNotificationMessage(wsMessage.rawData);
+          break;
+        case 'message':
+          // 格式2: 标准message类型，数据在data字段中
+          final data = wsMessage.rawData?['data'] as Map<String, dynamic>?;
+          if (data != null) {
+            _handleNotificationMessage(data);
+          } else {
+            if (kDebugMode) {
+              print('Message type "message" but no data field found');
+            }
+          }
+          break;
+        case 'stream':
+          // 格式3: Stream类型消息（如content_delta事件）
+          _handleStreamMessage(wsMessage.rawData);
+          break;
+        default:
+          // 其他类型尝试作为通知处理（兼容旧格式）
+          if (kDebugMode) {
+            print('Unknown message type "${wsMessage.type}", trying to parse as notification');
+          }
+          _handleNotificationMessage(wsMessage.rawData);
       }
     } catch (e, stackTrace) {
       if (kDebugMode) {
@@ -196,6 +190,123 @@ class NotificationWebSocketService extends GetxService {
         print('Stack trace: $stackTrace');
       }
     }
+  }
+
+  /// 处理Stream类型消息
+  /// 格式: {"type": "stream", "event": "content_delta", "content": "xxx", "agent_id": "xxx", ...}
+  /// Stream消息单独存储，不存入本地数据库，也不推送到微信，不需要标记已读
+  void _handleStreamMessage(Map<String, dynamic>? data) {
+    if (data == null) return;
+
+    final event = data['event']?.toString();
+    final content = data['content']?.toString() ?? '';
+    final agentId = data['agent_id']?.toString() ?? '未知Agent';
+    final sessionId = data['session_id']?.toString() ?? '';
+    final eventId = data['event_id']?.toString() ?? '';
+
+    // 只处理content_delta事件（完整内容）
+    if (event != 'content_delta' || content.isEmpty) {
+      if (kDebugMode) {
+        print('Stream message ignored: event=$event, hasContent=${content.isNotEmpty}');
+      }
+      return;
+    }
+
+    // 使用event_id作为消息唯一标识（每条消息都有唯一的event_id）
+    final messageId = eventId.isNotEmpty ? eventId : DateTime.now().millisecondsSinceEpoch.toString();
+
+    // 检查是否已存在相同event_id的消息（去重）
+    final existingIndex = streamMessages.indexWhere((m) => m['event_id'] == messageId);
+    if (existingIndex != -1) {
+      // 已存在，更新内容
+      streamMessages[existingIndex] = {
+        ...streamMessages[existingIndex],
+        'content': content,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      };
+      // 通知Stream消息监听者
+      _streamMessageController.add(streamMessages[existingIndex]);
+      if (kDebugMode) {
+        print('Updated existing stream message: event_id=$messageId');
+      }
+      return;
+    }
+
+    // 构建Stream消息数据（直接使用原始数据格式）
+    final streamMessage = {
+      'event_id': messageId,
+      'session_id': sessionId,
+      'agent_id': agentId,
+      'content': content,
+      'room_id': data['room_id'],
+      'run_id': data['run_id'],
+      'status': data['status'],
+      'role': data['role'],
+      'event': event,
+      'original_timestamp': data['timestamp'],
+      'received_at': DateTime.now().millisecondsSinceEpoch,
+    };
+
+    if (kDebugMode) {
+      print('Creating stream message: event_id=$messageId, agent=$agentId');
+    }
+
+    // 添加到Stream消息列表头部（最新的在前面）
+    streamMessages.insert(0, streamMessage);
+
+    // 通知Stream消息监听者
+    _streamMessageController.add(streamMessage);
+
+    if (kDebugMode) {
+      print('Stream message processed successfully');
+    }
+  }
+
+  /// 处理通知消息数据
+  void _handleNotificationMessage(Map<String, dynamic>? data) {
+    if (data == null) return;
+
+    final notification = NotificationMessage(
+      id: data['id']?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      title: data['title']?.toString() ?? '新消息',
+      content: data['content']?.toString() ?? '',
+      level: data['level']?.toString() ?? 'info',
+      timestamp: DateTime.now(),
+      isRead: false,
+      extraData: data['extraData'] as Map<String, dynamic>?,
+    );
+
+    if (kDebugMode) {
+      print(
+        'Creating notification: id=${notification.id}, title=${notification.title}',
+      );
+    }
+
+    // 保存到本地并更新列表
+    _storageService
+        .addMessage(notification)
+        .then((_) {
+          // 添加到消息列表头部（最新的在前面）
+          messages.insert(0, notification);
+
+          // 更新未读数量
+          unreadCount.value++;
+
+          // 通知监听者
+          _messageController.add(notification);
+
+          // 推送到微信（如果微信已登录）
+          _pushToWeChat(notification);
+
+          if (kDebugMode) {
+            print('Notification processed successfully');
+          }
+        })
+        .catchError((e) {
+          if (kDebugMode) {
+            print('Error saving notification: $e');
+          }
+        });
   }
 
   /// 推送消息到微信
@@ -300,7 +411,21 @@ class NotificationWebSocketService extends GetxService {
     await _loadMessages();
   }
 
-  /// 测试方法：模拟接收一条消息（用于调试）
+  // ==================== Stream消息管理方法 ====================
+
+  /// 删除Stream消息
+  void deleteStreamMessage(String sessionId) {
+    streamMessages.removeWhere((m) => m['session_id'] == sessionId);
+  }
+
+  /// 清除所有Stream消息
+  void clearAllStreamMessages() {
+    streamMessages.clear();
+  }
+
+  // ==================== 测试方法 ====================
+
+  /// 测试方法：模拟接收一条普通消息（用于调试）
   void testReceiveMessage() {
     if (kDebugMode) {
       print('Test: Simulating message reception');
@@ -326,9 +451,34 @@ class NotificationWebSocketService extends GetxService {
     });
   }
 
+  /// 测试方法：模拟接收一条Stream消息（用于调试）
+  void testReceiveStreamMessage() {
+    if (kDebugMode) {
+      print('Test: Simulating stream message reception');
+    }
+
+    _handleStreamMessage({
+      'type': 'stream',
+      'event': 'content_delta',
+      'session_id': 'test_session_${DateTime.now().millisecondsSinceEpoch}',
+      'room_id': 'test_room',
+      'agent_id': 'test_agent',
+      'run_id': 'test_run',
+      'status': 'succeeded',
+      'role': 'agent',
+      'content': '这是一条测试Stream消息，时间: ${DateTime.now()}',
+      'timestamp': DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    });
+
+    if (kDebugMode) {
+      print('Test: Stream message processed');
+    }
+  }
+
   @override
   void onClose() {
     _messageController.close();
+    _streamMessageController.close();
     _client?.dispose();
     super.onClose();
   }

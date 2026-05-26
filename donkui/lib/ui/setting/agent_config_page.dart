@@ -1,6 +1,7 @@
 import 'package:donk/app/layout/app_dialog.dart';
 import 'package:flutter/material.dart';
 import '../../common/service/setting_service.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// Agent 配置页面
 class AgentConfigPage extends StatefulWidget {
@@ -147,9 +148,9 @@ class _AgentConfigPageState extends State<AgentConfigPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Agent 配置',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context)!.agentSettings,
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
@@ -179,7 +180,7 @@ class _AgentConfigPageState extends State<AgentConfigPage> {
                                   color: Colors.white,
                                 ),
                               )
-                              : const Text('保存'),
+                              : Text(AppLocalizations.of(context)!.save),
                     ),
                   const SizedBox(width: 12),
 
@@ -217,55 +218,53 @@ class _AgentConfigPageState extends State<AgentConfigPage> {
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: _loadConfig,
-                      child: const Text('重新加载'),
+                      child: Text(AppLocalizations.of(context)!.reload),
                     ),
                   ],
                 ),
               ),
             )
           else
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // _buildTextField(
-                    //   label: 'Agent 名称',
-                    //   controller: _nameController,
-                    //   hintText: '如: donk',
-                    // ),
-                    _buildTextField(
-                      label: '最大循环次数',
-                      controller: _maxLoopController,
-                      hintText: '如: 10',
-                      keyboardType: TextInputType.number,
-                      helperText: 'Agent 执行任务时的最大循环次数',
-                    ),
-                    _buildTextField(
-                      label: '收敛终止数',
-                      controller: _convergeAfterController,
-                      hintText: '如: 3',
-                      keyboardType: TextInputType.number,
-                      helperText: '连续无工具调用次数达到此值时终止',
-                    ),
-                    _buildTextField(
-                      label: '超时时间（秒）',
-                      controller: _timeoutController,
-                      hintText: '如: 300',
-                      keyboardType: TextInputType.number,
-                      helperText: '单次任务执行的超时时间',
-                    ),
-                    _buildTextField(
-                      label: '每日 Token 限额',
-                      controller: _dailyTokenLimitController,
-                      hintText: '-1 表示无限制',
-                      keyboardType: TextInputType.number,
-                      helperText: '-1 表示不限制每日 Token 使用量',
-                    ),
-                  ],
+            Builder(builder: (context) {
+              final l10n = AppLocalizations.of(context)!;
+              return Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildTextField(
+                        label: l10n.maxLoop,
+                        controller: _maxLoopController,
+                        hintText: l10n.maxLoopHint,
+                        keyboardType: TextInputType.number,
+                        helperText: 'Agent 执行任务时的最大循环次数',
+                      ),
+                      _buildTextField(
+                        label: l10n.convergeAfter,
+                        controller: _convergeAfterController,
+                        hintText: l10n.convergeAfterHint,
+                        keyboardType: TextInputType.number,
+                        helperText: '连续无工具调用次数达到此值时终止',
+                      ),
+                      _buildTextField(
+                        label: l10n.timeout,
+                        controller: _timeoutController,
+                        hintText: l10n.timeoutHint,
+                        keyboardType: TextInputType.number,
+                        helperText: '单次任务执行的超时时间',
+                      ),
+                      _buildTextField(
+                        label: l10n.dailyTokenLimit,
+                        controller: _dailyTokenLimitController,
+                        hintText: l10n.dailyTokenLimitHint,
+                        keyboardType: TextInputType.number,
+                        helperText: '-1 表示不限制每日 Token 使用量',
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ),
+              );
+            }),
         ],
       ),
     );

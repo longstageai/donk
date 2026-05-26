@@ -2,6 +2,7 @@ import 'package:donk/common/model/notification_message.dart';
 import 'package:donk/common/service/notification_websocket_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// 消息通知页面
 class NotificationView extends StatefulWidget {
@@ -24,17 +25,18 @@ class _NotificationViewState extends State<NotificationView> {
 
   /// 格式化时间
   String _formatTime(DateTime time) {
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final diff = now.difference(time);
 
     if (diff.inMinutes < 1) {
-      return '刚刚';
+      return l10n.justNow;
     } else if (diff.inHours < 1) {
-      return '${diff.inMinutes}分钟前';
+      return l10n.minutesAgo(diff.inMinutes.toString());
     } else if (diff.inDays < 1) {
-      return '${diff.inHours}小时前';
+      return l10n.hoursAgo(diff.inHours.toString());
     } else if (diff.inDays < 7) {
-      return '${diff.inDays}天前';
+      return l10n.daysAgo(diff.inDays.toString());
     } else {
       return '${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')} ${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
     }
@@ -97,6 +99,7 @@ class _NotificationViewState extends State<NotificationView> {
 
   /// 构建页面头部
   Widget _buildHeader() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
@@ -105,9 +108,9 @@ class _NotificationViewState extends State<NotificationView> {
       ),
       child: Row(
         children: [
-          const Text(
-            '消息通知',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Text(
+            l10n.notifications,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const Spacer(),
           // 未读数量徽章
@@ -133,7 +136,7 @@ class _NotificationViewState extends State<NotificationView> {
               await _service.markAllAsRead();
             },
             icon: const Icon(Icons.done_all, size: 16),
-            label: const Text('全部已读'),
+            label: Text(l10n.markAllRead),
           ),
           // 清空按钮
           IconButton(
@@ -142,16 +145,16 @@ class _NotificationViewState extends State<NotificationView> {
                 context: context,
                 builder:
                     (context) => AlertDialog(
-                      title: const Text('确认清空'),
-                      content: const Text('确定要清空所有消息吗？此操作不可恢复。'),
+                      title: Text(l10n.clearConfirmTitle),
+                      content: Text(l10n.clearConfirmMessage),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context, false),
-                          child: const Text('取消'),
+                          child: Text(l10n.cancel),
                         ),
                         TextButton(
                           onPressed: () => Navigator.pop(context, true),
-                          child: const Text('确定'),
+                          child: Text(l10n.confirm),
                         ),
                       ],
                     ),
@@ -161,7 +164,7 @@ class _NotificationViewState extends State<NotificationView> {
               }
             },
             icon: const Icon(Icons.delete_outline),
-            tooltip: '清空消息',
+            tooltip: l10n.clearAll,
           ),
         ],
       ),
@@ -175,6 +178,7 @@ class _NotificationViewState extends State<NotificationView> {
       // 连接正常时不显示
       if (connected) return const SizedBox.shrink();
 
+      final l10n = AppLocalizations.of(context)!;
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         color: Colors.orange.shade50,
@@ -183,13 +187,13 @@ class _NotificationViewState extends State<NotificationView> {
             Icon(Icons.cloud_off, size: 14, color: Colors.orange),
             const SizedBox(width: 8),
             Text(
-              'WebSocket未连接',
+              l10n.websocketDisconnected,
               style: TextStyle(fontSize: 12, color: Colors.orange.shade700),
             ),
             const Spacer(),
             TextButton(
               onPressed: () => _service.reconnect(),
-              child: const Text('重新连接'),
+              child: Text(l10n.reconnect),
             ),
           ],
         ),
@@ -199,6 +203,7 @@ class _NotificationViewState extends State<NotificationView> {
 
   /// 构建空状态视图
   Widget _buildEmptyView() {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -206,7 +211,7 @@ class _NotificationViewState extends State<NotificationView> {
           Icon(Icons.notifications_none, size: 64, color: Colors.grey.shade300),
           const SizedBox(height: 16),
           Text(
-            '暂无消息',
+            l10n.noMessages,
             style: TextStyle(fontSize: 16, color: Colors.grey.shade500),
           ),
         ],

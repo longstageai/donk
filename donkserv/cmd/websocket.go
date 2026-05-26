@@ -46,7 +46,6 @@ var notificationTemplates = []struct {
 func SetupWebSocket(app *appctx.Application, engine *gin.Engine) (*websocket.Server, error) {
 	// 创建WebSocket服务器
 	wsServer := websocket.NewServer()
-
 	// 注册WebSocket事件推送端点
 	engine.GET("/ws/events", wsServer.HandleWebSocket)
 	logger.Info("WebSocket事件推送端点已注册: GET /ws/events", nil)

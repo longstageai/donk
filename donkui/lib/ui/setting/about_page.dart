@@ -1,6 +1,7 @@
 import 'package:donk/app/conf/config.dart';
 import 'package:donk/app/layout/app_dialog.dart';
 import 'package:flutter/material.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// 关于我们页面
 /// 展示应用版本信息、更新入口和官方网站链接
@@ -53,9 +54,9 @@ class _AboutPageState extends State<AboutPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          '关于我们',
-          style: TextStyle(
+        Text(
+          AppLocalizations.of(context)!.about,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
@@ -104,6 +105,7 @@ class _AboutPageState extends State<AboutPage> {
 
   /// 构建版本信息区域
   Widget _buildVersionInfo() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -115,9 +117,9 @@ class _AboutPageState extends State<AboutPage> {
           /// 版本信息
           Row(
             children: [
-              const Text(
-                '当前版本',
-                style: TextStyle(fontSize: 14, color: Colors.black87),
+              Text(
+                l10n.currentVersion,
+                style: const TextStyle(fontSize: 14, color: Colors.black87),
               ),
               const SizedBox(width: 8),
               Text(
@@ -135,9 +137,9 @@ class _AboutPageState extends State<AboutPage> {
                     color: const Color(0xFFE8F5E9),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: const Text(
-                    '可更新',
-                    style: TextStyle(fontSize: 11, color: Color(0xFF07C160)),
+                  child: Text(
+                    l10n.updateAvailable,
+                    style: const TextStyle(fontSize: 11, color: Color(0xFF07C160)),
                   ),
                 ),
               ],
@@ -194,6 +196,7 @@ class _AboutPageState extends State<AboutPage> {
 
   /// 构建进入官网入口
   Widget _buildOfficialWebsite() {
+    final l10n = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: () {
         /// 处理进入官网逻辑
@@ -204,11 +207,11 @@ class _AboutPageState extends State<AboutPage> {
           color: const Color(0xFFF8F8F8),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('进入官网', style: TextStyle(fontSize: 14, color: Colors.black87)),
-            Icon(Icons.chevron_right, size: 20, color: Colors.grey),
+            Text(l10n.officialWebsite, style: const TextStyle(fontSize: 14, color: Colors.black87)),
+            const Icon(Icons.chevron_right, size: 20, color: Colors.grey),
           ],
         ),
       ),
@@ -217,6 +220,7 @@ class _AboutPageState extends State<AboutPage> {
 
   /// 构建底部协议链接
   Widget _buildFooterLinks() {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -226,9 +230,9 @@ class _AboutPageState extends State<AboutPage> {
             onTap: () {
               /// 处理查看服务协议逻辑
             },
-            child: const Text(
-              '服务协议',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+            child: Text(
+              l10n.serviceAgreement,
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ),
 
@@ -245,9 +249,9 @@ class _AboutPageState extends State<AboutPage> {
             onTap: () {
               /// 处理查看隐私保护协议逻辑
             },
-            child: const Text(
-              '隐私保护协议',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+            child: Text(
+              l10n.privacyPolicy,
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ),
         ],
