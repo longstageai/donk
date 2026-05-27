@@ -3,19 +3,18 @@ server:
   port: 8080
 
 auth:
-  enabled: true
-  api_keys:
-    - sk-your-secret-key
+  enabled: false
+  api_keys: []
 
 llm:
   provider: doubao
   model: doubao-seed-1-8-251228
-  api_key: fd123123131-31231313
+  api_key: ""
 
 embedding:
   provider: doubao
   model: ep-20260325174412-vz86z
-  api_key: fd123123131-31231313
+  api_key: ""
 
 agent:
   name: main

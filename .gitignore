@@ -43,6 +43,13 @@ temp/
 /donkserv/go.work
 /donkserv/sh/donk
 /donkserv/sh/donk.exe
+/donkserv/data/db/
+/donkserv/data/doc/
+/donkserv/data/history/
+/donkserv/data/knowledge/
+/donkserv/data/script_runtime/
+/donkserv/data/skills/
+/donkserv/data/vector_dimension.txt
 
 /donk/.fvm/
 /donk/.dart_tool/
