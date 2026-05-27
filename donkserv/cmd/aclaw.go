@@ -19,7 +19,6 @@ import (
 	"github.com/longstageai/donk/donk/internal/profile"
 	"github.com/longstageai/donk/donk/internal/scheduler"
 	"github.com/longstageai/donk/donk/internal/setting"
-	"github.com/longstageai/donk/donk/internal/skilldiscovery"
 	"github.com/longstageai/donk/donk/internal/sql"
 	"github.com/longstageai/donk/donk/internal/websocket"
 	appctx "github.com/longstageai/donk/donk/pkg/context"
@@ -33,7 +32,6 @@ type AppInitializer struct {
 	app                  *appctx.Application
 	db                   *sql.DB
 	knowledgeInitializer *knowledge.Initializer
-	skillDiscoveryInit   *skilldiscovery.Initializer
 	httpServer           *http.Server
 	engine               *gin.Engine
 	wsServer             *websocket.Server
@@ -142,11 +140,6 @@ func (init *AppInitializer) initCoreServices() error {
 		return fmt.Errorf("初始化 WebSocket 失败: %w", err)
 	}
 	init.wsServer = wsServer
-
-	// 给 skilldiscovery 设置 WebSocket Hub（如果已初始化）
-	if init.skillDiscoveryInit != nil {
-		init.skillDiscoveryInit.SetWebSocketHub(wsServer.Hub())
-	}
 
 	// 创建调度器服务（使用已创建的WebSocket服务器进行事件推送）
 	sched, err := SetupScheduler(init.app, engine, init.db, wsServer)
@@ -426,15 +419,6 @@ func (init *AppInitializer) registerShutdownHooks() {
 		init.app.RegisterTaskFunc("knowledge", func(ctx context.Context, application *appctx.Application) error {
 			<-ctx.Done()
 			init.knowledgeInitializer.Stop()
-			return nil
-		}, 0)
-	}
-
-	// 注册技能发现服务优雅关闭
-	if init.skillDiscoveryInit != nil {
-		init.app.RegisterTaskFunc("skilldiscovery", func(ctx context.Context, application *appctx.Application) error {
-			<-ctx.Done()
-			init.skillDiscoveryInit.Stop()
 			return nil
 		}, 0)
 	}
