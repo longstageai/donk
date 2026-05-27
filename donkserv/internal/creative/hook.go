@@ -124,16 +124,25 @@ func (h *WebSocketHook) BeforeOutput(req *AgentRunRequest, output *AgentOutput) 
 	if h == nil || h.hub == nil || req == nil || output == nil {
 		return nil
 	}
-	for _, draft := range output.Messages {
+
+	for i, draft := range output.Messages {
 		if draft.Content == "" {
 			continue
 		}
+		artifactDraft := output.Artifacts[i]
+		if artifactDraft.Type == ArtifactFinalDelivery {
+			msg := websocket.NewNotification("notification", "", draft.Content)
+			data, _ := json.Marshal(msg)
+			h.hub.BroadcastJSON(data)
+		}
+
 		message := WebSocketAgentMessage{Type: "stream", Event: "content_delta", SessionID: req.Session.ID, RoomID: req.Room.ID, EventID: req.Event.ID, AgentID: req.Agent.ID(), RunID: req.RunID, Status: output.Status, Role: draft.Role, Content: draft.Content, Timestamp: time.Now().Unix()}
 		data, err := json.Marshal(message)
 		if err != nil {
 			logger.Error("creative agent 输出消息序列化失败", map[string]interface{}{"error": err.Error()})
 			continue
 		}
+
 		h.hub.BroadcastJson(data)
 	}
 	return nil

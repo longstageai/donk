@@ -24,7 +24,7 @@ type Handler struct {
 // db: 数据库连接，用于持久化运行状态
 func NewHandler(runtime *Runtime, db *donksql.DB) *Handler {
 	h := &Handler{runtime: runtime, db: db}
-	h.runner = NewLoopRunner(runtime, 30*time.Minute, func(reason string) {
+	h.runner = NewLoopRunner(runtime, 10*time.Minute, func(reason string) {
 		if err := h.saveRuntimeState("stopped"); err != nil {
 			logger.Error("保存 creative 自动停止状态失败", map[string]interface{}{"reason": reason, "error": err.Error()})
 		}

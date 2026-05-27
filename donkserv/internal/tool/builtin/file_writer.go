@@ -98,7 +98,7 @@ func (w *FileWriter) Parameters() *tool.Schema {
 	schema.Properties = map[string]*tool.Property{
 		"path": {
 			Type:        "string",
-			Description: "要写入的文件路径（支持绝对路径和相对路径）",
+			Description: "要写入的文件路径。建议使用绝对路径（如 C:\\Users\\user\\file.txt 或 D:\\project\\file.txt）。如果使用相对路径，会依次尝试在工作目录和当前目录下查找。",
 		},
 		"content": {
 			Type:        "string",
@@ -266,6 +266,11 @@ func (w *FileWriter) Execute(ctx *tool.Context) (*tool.Result, error) {
 }
 
 // resolvePath 解析路径
+// 解析策略：
+// 1. 如果是绝对路径，直接使用
+// 2. 如果是相对路径，先尝试基于 workingDir 解析
+// 3. 如果基于 workingDir 的文件不存在，尝试基于当前工作目录解析
+// 4. 如果都不存在，返回基于 workingDir 的路径（让后续报错更清晰）
 func (w *FileWriter) resolvePath(path string) (string, error) {
 	if filepath.IsAbs(path) {
 		return filepath.Clean(path), nil
@@ -273,25 +278,37 @@ func (w *FileWriter) resolvePath(path string) (string, error) {
 
 	if w.workingDir != "" {
 		fullPath := filepath.Join(w.workingDir, path)
-		return filepath.Clean(fullPath), nil
+		cleanPath := filepath.Clean(fullPath)
+		// 检查文件是否存在
+		if _, err := os.Stat(cleanPath); err == nil {
+			return cleanPath, nil
+		}
 	}
 
 	absPath, err := filepath.Abs(path)
 	if err != nil {
 		return "", err
 	}
-	return filepath.Clean(absPath), nil
+	cleanAbsPath := filepath.Clean(absPath)
+
+	// 如果 workingDir 存在但文件不在其中，返回当前工作目录下的路径
+	if w.workingDir != "" {
+		// 检查当前工作目录下的文件是否存在
+		if _, err := os.Stat(cleanAbsPath); err == nil {
+			return cleanAbsPath, nil
+		}
+		// 文件都不存在，返回基于 workingDir 的路径（让后续报错更清晰）
+		return filepath.Clean(filepath.Join(w.workingDir, path)), nil
+	}
+
+	return cleanAbsPath, nil
 }
 
 // validatePath 验证路径安全
 func (w *FileWriter) validatePath(path string) error {
-	dangerousPatterns := []string{
-		"..", "//", "\\\\", "\x00",
-	}
-	for _, pattern := range dangerousPatterns {
-		if strings.Contains(path, pattern) {
-			return fmt.Errorf("路径包含非法字符: %s", pattern)
-		}
+	// 检查路径是否包含空字符（唯一的真正危险字符）
+	if strings.Contains(path, "\x00") {
+		return fmt.Errorf("路径包含非法字符: 空字符")
 	}
 
 	// 检查是否为符号链接

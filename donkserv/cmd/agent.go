@@ -331,8 +331,8 @@ func (b *AgentBuilder) initTools() {
 	// 注册内置工具
 	registry.Register(builtin.NewHTTP())
 	registry.Register(builtin.NewCalculator())
-	registry.Register(builtin.NewFileReader())
-	registry.Register(builtin.NewFileWriter())
+	registry.Register(builtin.NewFileReader(builtin.WithWorkingDir(b.workspace)))
+	registry.Register(builtin.NewFileWriter(builtin.WithWorkingDirWriter(b.workspace)))
 	registry.Register(builtin.NewPDFParser())
 	registry.Register(builtin.NewWordParser())
 	registry.Register(builtin.NewOfficialSkillsSearch())

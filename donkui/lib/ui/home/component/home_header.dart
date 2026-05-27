@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:donk/app/layout/app_dialog.dart';
 import 'package:donk/common/service/setting_service.dart';
 import 'package:donk/common/widget/app_button.dart';
@@ -30,11 +32,21 @@ class _HomeHeaderState extends State<HomeHeader> {
   /// 是否加载中
   bool _isLoading = true;
 
+  /// Token 预算定时刷新器
+  Timer? _tokenBudgetTimer;
+
   @override
   void initState() {
     super.initState();
     _loadTokenBudget();
     _initTokenRefreshListener();
+    _startTokenBudgetTimer();
+  }
+
+  @override
+  void dispose() {
+    _stopTokenBudgetTimer();
+    super.dispose();
   }
 
   /// 初始化 Token 刷新监听器
@@ -43,6 +55,21 @@ class _HomeHeaderState extends State<HomeHeader> {
     ever(controller.tokenRefreshTrigger, (_) {
       _loadTokenBudget();
     });
+  }
+
+  /// 启动 Token 预算定时刷新器
+  /// 每隔1分钟自动刷新一次 Token 预算
+  void _startTokenBudgetTimer() {
+    _tokenBudgetTimer?.cancel();
+    _tokenBudgetTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      _loadTokenBudget();
+    });
+  }
+
+  /// 停止 Token 预算定时刷新器
+  void _stopTokenBudgetTimer() {
+    _tokenBudgetTimer?.cancel();
+    _tokenBudgetTimer = null;
   }
 
   /// 加载 Token 预算状态
@@ -141,45 +168,11 @@ class _HomeHeaderState extends State<HomeHeader> {
                   icon: const Icon(Icons.delete, size: 20),
                   tooltip: l10n.clearMessages,
                 ),
-                // 消息通知按钮（带未读数量徽章）
-                Obx(() {
-                  final unreadCount = controller.unreadNotificationCount.value;
-                  return Stack(
-                    children: [
-                      IconButton(
-                        onPressed: widget.onMessageTap,
-                        icon: const Icon(Icons.camera_rear, size: 20),
-                        tooltip: 'agent',
-                      ),
-                      // 未读数量徽章
-                      if (unreadCount > 0)
-                        Positioned(
-                          right: 4,
-                          top: 4,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            constraints: const BoxConstraints(
-                              minWidth: 16,
-                              minHeight: 16,
-                            ),
-                            child: Text(
-                              unreadCount > 99 ? '99+' : unreadCount.toString(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                    ],
-                  );
-                }),
+                IconButton(
+                  onPressed: widget.onMessageTap,
+                  icon: const Icon(Icons.camera_rear, size: 20),
+                  tooltip: 'agent',
+                ),
               ],
             ),
           ),

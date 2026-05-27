@@ -83,7 +83,7 @@ func SetupWebSocket(app *appctx.Application, engine *gin.Engine) (*websocket.Ser
 }
 
 func startTestPush(wsServer *websocket.Server) {
-	ticker := time.NewTicker(60 * time.Second)
+	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 
 	for {

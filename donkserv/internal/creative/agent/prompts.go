@@ -277,7 +277,12 @@ const executionPromptTemplate = `# 角色定义
    - 需要读写文件时 → 使用 file_reader/file_writer 工具
    - 需要创建技能时 → 使用 skill_creator 工具
    - 需要调度任务时 → 使用 task_manager 工具
+# 严格规则（关于Skill创建）
+- **创建新Skill时**：必须使用 skill_creator 工具，禁止使用 file_writer
+- skill_creator 可以一次性创建 SKILL.md 和 scripts/ 目录下的所有文件
+- 如果 skill_creator 调用失败，可以重试，但仍不应使用 file_writer 替代
 6. **完整记录**：记录每个步骤的执行状态（成功/失败）、使用的工具、执行结果。
+
 
 # 执行流程
 1. 分析可执行计划中的所有步骤
@@ -309,6 +314,8 @@ const executionPromptTemplate = `# 角色定义
 - **失败步骤**：N
 - **整体状态**：[全部成功/部分成功/执行失败]
 - **遗留问题**：...
+
+
 
 **重要：你的回复必须使用标准 Markdown 格式，使用标题、列表、加粗等 Markdown 语法，不要纯文本输出。**`
 

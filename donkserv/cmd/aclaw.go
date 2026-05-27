@@ -16,7 +16,6 @@ import (
 	"github.com/longstageai/donk/donk/internal/knowledge"
 	"github.com/longstageai/donk/donk/internal/memory"
 	"github.com/longstageai/donk/donk/internal/model"
-	"github.com/longstageai/donk/donk/internal/multiagent"
 	"github.com/longstageai/donk/donk/internal/profile"
 	"github.com/longstageai/donk/donk/internal/scheduler"
 	"github.com/longstageai/donk/donk/internal/setting"
@@ -35,7 +34,6 @@ type AppInitializer struct {
 	db                   *sql.DB
 	knowledgeInitializer *knowledge.Initializer
 	skillDiscoveryInit   *skilldiscovery.Initializer
-	multiAgentService    *multiagent.Service
 	httpServer           *http.Server
 	engine               *gin.Engine
 	wsServer             *websocket.Server
@@ -123,15 +121,6 @@ func (init *AppInitializer) initConfigServices() error {
 		setting.SetKnowledgeController(knowledgeInitializer)
 	}
 
-	// 初始化技能发现模块
-	//skillDiscoveryInit, err := skilldiscovery.Init(init.db.DB)
-	//if err != nil {
-	//	// 非致命错误，记录日志但继续启动
-	//	fmt.Printf("初始化技能发现模块失败: %v\n", err)
-	//} else {
-	//	init.skillDiscoveryInit = skillDiscoveryInit
-	//}
-
 	return nil
 }
 
@@ -158,12 +147,6 @@ func (init *AppInitializer) initCoreServices() error {
 	if init.skillDiscoveryInit != nil {
 		init.skillDiscoveryInit.SetWebSocketHub(wsServer.Hub())
 	}
-	// 创建多Agent服务（此时 ConfigProvider 已可用）
-	multiAgentService, err := NewMultiAgentSvc(init.app, init.db.DB, wsServer.Hub())
-	if err != nil {
-		return fmt.Errorf("初始化 MultiAgent 失败: %w", err)
-	}
-	init.multiAgentService = multiAgentService
 
 	// 创建调度器服务（使用已创建的WebSocket服务器进行事件推送）
 	sched, err := SetupScheduler(init.app, engine, init.db, wsServer)
@@ -435,16 +418,6 @@ func (init *AppInitializer) registerShutdownHooks() {
 		}()
 		<-ctx.Done()
 		init.httpServer.WaitForShutdown()
-		return nil
-	}, 0)
-
-	// 注册MultiAgent服务
-	init.app.RegisterTaskFunc("multiagent", func(ctx context.Context, application *appctx.Application) error {
-		go func() {
-			//init.multiAgentService.Start()
-		}()
-		<-ctx.Done()
-		init.multiAgentService.Stop()
 		return nil
 	}, 0)
 

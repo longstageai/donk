@@ -112,12 +112,6 @@ func (e *CommandExecutor) Execute(ctx *tool.Context) (*tool.Result, error) {
 		shell = strings.ToLower(s)
 	}
 
-	// 获取工作目录
-	workingDir, ok := ctx.Params["working_dir"].(string)
-	if !ok || workingDir == "" {
-		return tool.NewErrorResultWithMsg(tool.ErrCodeInvalidParams, "工作目录不能为空"), nil
-	}
-
 	// 获取超时时间
 	timeout := e.defaultTimeout
 	if t, ok := ctx.Params["timeout"].(float64); ok && t > 0 {
@@ -138,11 +132,11 @@ func (e *CommandExecutor) Execute(ctx *tool.Context) (*tool.Result, error) {
 	}
 
 	// 执行命令
-	return e.executeCommand(command, shell, workingDir, timeout, envVars)
+	return e.executeCommand(command, shell, timeout, envVars)
 }
 
 // executeCommand 执行具体的命令
-func (e *CommandExecutor) executeCommand(command, shell, workingDir string, timeout time.Duration, envVars map[string]string) (*tool.Result, error) {
+func (e *CommandExecutor) executeCommand(command, shell string, timeout time.Duration, envVars map[string]string) (*tool.Result, error) {
 	var cmd *exec.Cmd
 
 	// 根据shell类型构建命令
@@ -153,11 +147,6 @@ func (e *CommandExecutor) executeCommand(command, shell, workingDir string, time
 		fallthrough
 	default:
 		cmd = exec.Command("cmd.exe", "/c", command)
-	}
-
-	// 设置工作目录
-	if workingDir != "" {
-		cmd.Dir = workingDir
 	}
 
 	// 设置环境变量
