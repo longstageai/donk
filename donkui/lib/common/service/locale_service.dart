@@ -6,7 +6,6 @@ class LocaleService {
   static const String _localeKey = 'app_locale';
   static const String _defaultLocale = 'en';
   // static const String _defaultLocale = 'zh';
-
   /// 获取保存的语言代码
   static Future<String> getSavedLocale() async {
     try {
