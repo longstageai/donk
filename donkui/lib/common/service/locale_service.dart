@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// 用于持久化存储和读取用户的语言偏好设置
 class LocaleService {
   static const String _localeKey = 'app_locale';
-  static const String _defaultLocale = 'zh';
+  static const String _defaultLocale = 'en';
 
   /// 获取保存的语言代码
   static Future<String> getSavedLocale() async {

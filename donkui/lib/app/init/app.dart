@@ -145,8 +145,8 @@ class _AppState extends State<App> with WindowListener {
           builder: FlutterSmartDialog.init(),
           locale: controller.locale,
           supportedLocales: const [
-            Locale('zh'),
             Locale('en'),
+            Locale('zh'),
           ],
           localizationsDelegates: const [
             AppLocalizations.delegate,

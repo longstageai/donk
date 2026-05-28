@@ -1,220 +1,224 @@
 # Donk
 
-[English](README_EN.md) | 简体中文
+English | [简体中文](README_CH.md)
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 ![Go](https://img.shields.io/badge/Go-1.26+-00ADD8?logo=go&logoColor=white)
 ![Flutter](https://img.shields.io/badge/Flutter-3.7+-02569B?logo=flutter&logoColor=white)
 ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey)
 
-# 🐴 核动驴 (Donk) - 你的全自动本地AI工作伙伴
+# Donk - Your Fully Automated Local AI Work Partner
 
-**一个正在进行的大胆实验：当AI拥有完整上下文和足够能力时，它能自主为你创造多少价值？**
-
----
-
-## 🤔 我们为什么要做核动驴？
-
-你是不是也有过这样的经历：
-- 下载了一堆AI工具，打开后却对着空白的输入框发呆
-- 知道AI很厉害，但就是不知道"它到底能帮我做什么"
-- 每次都要绞尽脑汁想提示词，结果还是不满意
-- 看着别人用AI效率翻倍，自己却连第一步都迈不出去
-
-**这不是你的问题，是现在所有AI产品的问题。**
-
-它们都把"如何使用AI"这个最难的问题，甩给了普通用户。
-
-核动驴就是为了解决这个问题而生的。我们相信：**最好的AI，是你几乎感觉不到它存在的AI。**
+**An ongoing bold experiment: when AI has complete context and enough capability, how much value can it create for you autonomously?**
 
 ---
 
-## ⚡ 什么是核动驴？
+## Why Are We Building Donk?
 
-核动驴不是又一个聊天窗口。它是一个**在你电脑后台默默运行的、全自动的AI工作伙伴**。
+Have you ever had these experiences?
 
-你只需要做三件事：
-1. 下载安装
-2. 告诉它你是谁、你关心什么
-3. 等待结果
+- You downloaded a pile of AI tools, opened them, and stared at an empty input box.
+- You know AI is powerful, but you still do not know what it can actually do for you.
+- Every time, you have to rack your brain for prompts, and the result is still unsatisfying.
+- You watch others multiply their productivity with AI, while you cannot even get past the first step.
 
-然后，核动驴会：
-- 🧠 自动学习你的工作习惯和知识体系
-- 🔍 主动发现你可能需要帮助的地方
-- 🛠️ 自己决定调用什么工具、执行什么任务
-- 📅 安排好自己的工作时间表
-- 📱 只在真正需要你时才通知你
+**This is not your problem. It is the problem with current AI products.**
 
-它就像一头不知疲倦、动力十足的驴子，在你看不见的地方，为你处理那些繁琐、重复、你甚至都没意识到可以自动化的工作。
+They all push the hardest question, "how to use AI", onto ordinary users.
+
+Donk exists to solve this. We believe that **the best AI is the AI you can barely feel.**
 
 ---
 
-## 🧪 这是一个开源的大规模社会实验
+## What Is Donk?
 
-核动驴不仅仅是一个软件产品，它更是一个**关于AI能力边界的科学实验**。
+Donk is not another chat window. It is a **fully automated AI work partner that quietly runs in the background on your computer**.
 
-我们正在验证一个激进的假设：
-> **当一个AI Agent拥有足够的本地上下文、完整的工具权限和无限的运行时间，它能否自主进化出人类从未想象过的、可复用的能力和工作场景？**
+You only need to do three things:
 
-这个实验需要你的参与。每一个下载使用核动驴的用户，每一次它自主完成的任务，每一个它自己发明的工作流，都在为这个问题提供答案。
+1. Download and install it.
+2. Tell it who you are and what you care about.
+3. Wait for results.
 
-我们会消耗天量的Token，记录无数次的尝试和失败，只为探索一个可能：**AI能否真正成为人类的"延伸"，而不是另一个需要我们学习如何使用的工具。**
+Then Donk will:
 
----
+- Automatically learn your work habits and knowledge system.
+- Proactively discover where you may need help.
+- Decide which tools to call and which tasks to execute.
+- Arrange its own work schedule.
+- Notify you only when it truly needs you.
 
-## ✨ 核动驴能做什么（现在和未来）
-
-- 📚 **本地知识库**：自动索引你电脑上的文档，不用再上传到云端
-- 🧠 **长期记忆**：记住你说过的每一句话、做过的每一个决定
-- 🛠️ **工具调用**：自动使用浏览器、文件系统、终端等工具
-- 📝 **Skill扩展**：支持自定义脚本，能力无限延伸
-- ⏰ **任务调度**：自己安排任务，在合适的时间自动执行
-- 🔔 **实时通知**：只在需要你决策时才打扰你
-- 🖥️ **桌面交互**：深度集成Windows系统，真正成为你的电脑的一部分
+It is like a tireless, highly powered donkey working out of sight, handling tedious, repetitive work and tasks you may not even have realized could be automated.
 
 ---
 
-## 🚀 快速开始
+## An Open-Source Social Experiment at Scale
 
-1. 从 [Releases](https://github.com/your-username/donk/releases) 页面下载最新版本
-2. 双击安装，按照向导完成初始设置
-3. 告诉核动驴你是谁，你想让它帮你做什么
-4. 最小化窗口，去做你真正重要的事情
-5. 等待它给你带来惊喜
+Donk is not just a software product. It is also a **scientific experiment about the boundaries of AI capability**.
 
----
+We are testing a radical hypothesis:
 
-## 🤝 加入我们的实验
+> **When an AI Agent has enough local context, full tool permissions, and unlimited runtime, can it autonomously evolve reusable capabilities and work scenarios that humans have never imagined?**
 
-核动驴目前处于早期实验阶段，它可能会犯错，可能会做一些傻事，甚至可能什么都不做。但这正是实验的意义所在。
+This experiment needs your participation. Every user who downloads and uses Donk, every task it completes autonomously, and every workflow it invents helps answer this question.
 
-如果你也对AI的未来充满好奇，如果你也厌倦了"提示词工程"，如果你也相信AI应该为我们工作，而不是反过来：
-
-- ⭐ 给我们一个Star，让更多人看到这个实验
-- 🐛 提交Issue，告诉我们它做了什么有趣的（或愚蠢的）事情
-- 💡 分享你的想法，告诉我们你希望它能为你做什么
-- 🔧 提交PR，帮助它变得更聪明、更强大
-
-**我们的目标不是打造一个完美的产品，而是共同探索AI的无限可能。**
+We will spend a huge number of tokens and record countless attempts and failures to explore one possibility: **can AI truly become an extension of humans, instead of another tool that humans must learn how to use?**
 
 ---
 
-## 📢 实验声明
+## What Donk Can Do Now and Later
 
-> "核动驴是一个实验性项目。它可能会产生意想不到的结果，可能会消耗大量的计算资源，也可能会完全失败。但如果我们成功了，我们将重新定义人类与AI的关系。"
+- **Local knowledge base**: automatically index documents on your computer without uploading them to the cloud.
+- **Long-term memory**: remember what you said and every decision you made.
+- **Tool calling**: automatically use the browser, file system, terminal, and other tools.
+- **Skill extensions**: support custom scripts so capabilities can keep expanding.
+- **Task scheduling**: schedule tasks and automatically execute them at the right time.
+- **Real-time notifications**: interrupt you only when your decision is needed.
+- **Desktop integration**: deeply integrate with Windows and become part of your computer.
+
+---
+
+## Quick Start
+
+1. Download the latest version from the [Releases](https://github.com/your-username/donk/releases) page.
+2. Double-click the installer and follow the wizard to complete initial setup.
+3. Tell Donk who you are and what you want it to help with.
+4. Minimize the window and return to the work that matters.
+5. Wait for it to surprise you.
+
+---
+
+## Join the Experiment
+
+Donk is currently in an early experimental stage. It may make mistakes, do silly things, or even do nothing at all. That is exactly what makes the experiment meaningful.
+
+If you are curious about the future of AI, tired of "prompt engineering", and believe AI should work for us rather than the other way around:
+
+- Give us a star so more people can see this experiment.
+- Submit issues and tell us what interesting or foolish things it did.
+- Share your ideas and tell us what you want it to do for you.
+- Submit PRs to help it become smarter and more capable.
+
+**Our goal is not to build a perfect product, but to explore the unlimited possibilities of AI together.**
+
+---
+
+## Experimental Statement
+
+> "Donk is an experimental project. It may produce unexpected results, consume a large amount of compute resources, or fail completely. But if we succeed, we will redefine the relationship between humans and AI."
 >
-> —— 核动驴实验团队
+> -- The Donk Experiment Team
 
 ---
 
-*核动驴 - 让AI为你工作，而不是你为AI工作。*
+*Donk - Let AI work for you, instead of you working for AI.*
 
-## 目录
+## Table of Contents
 
-- [界面预览](#界面预览)
-- [适用场景](#适用场景)
-- [核心特性](#核心特性)
-- [当前能力](#当前能力)
-- [架构概览](#架构概览)
-- [技术栈](#技术栈)
-- [目录结构](#目录结构)
-- [快速开始](#快速开始)
-- [配置说明](#配置说明)
+- [Screenshots](#screenshots)
+- [Use Cases](#use-cases)
+- [Core Features](#core-features)
+- [Current Capabilities](#current-capabilities)
+- [Architecture Overview](#architecture-overview)
+- [Tech Stack](#tech-stack)
+- [Directory Structure](#directory-structure)
+- [Quick Start](#quick-start-1)
+- [Configuration](#configuration)
 - [HTTP API](#http-api)
-- [Skill 开发](#skill-开发)
-- [构建](#构建)
-- [开发建议](#开发建议)
-- [安全说明](#安全说明)
+- [Skill Development](#skill-development)
+- [Build](#build)
+- [Development Notes](#development-notes)
+- [Security Notes](#security-notes)
 
-## 适用场景
+## Use Cases
 
-| 场景 | Donk 提供的能力 |
+| Scenario | What Donk Provides |
 | --- | --- |
-| 本地个人 AI 助手 | 管理对话、长期记忆、知识库和日常任务 |
-| Agent 工具平台 | 将文件、命令、浏览器、HTTP、文档解析、知识库检索等能力注册为工具 |
-| Skill 运行环境 | 通过 `SKILL.md`、脚本和参考资料扩展 Agent 的垂直任务能力 |
-| 自动化任务入口 | 用自然语言创建一次性、延迟或 Cron 调度任务 |
-| 桌面端 Agent 实验项目 | 前后端分离，便于替换模型、工具、工作流和 UI |
+| Local personal AI assistant | Conversation management, long-term memory, knowledge base, and daily task handling |
+| Agent tool platform | Registers file, command, browser, HTTP, document parsing, and knowledge search capabilities as tools |
+| Skill runtime | Extends vertical task capabilities through `SKILL.md`, scripts, and reference materials |
+| Automation task entry point | Creates one-time, delayed, or Cron-scheduled tasks with natural language |
+| Desktop Agent experiment | Frontend/backend separation for replacing models, tools, workflows, and UI |
 
-## 核心特性
+## Core Features
 
-- **本地优先**：配置、会话、任务、知识库、Skill 和运行状态保存在本地。
-- **桌面端配置**：模型、Embedding、Agent、知识库和通用开关都通过前端页面配置。
-- **流式 Agent 对话**：基于 SSE 返回推理、内容、工具调用、工具结果等事件。
-- **可扩展工具系统**：内置文件、命令、HTTP、浏览器、文档解析、知识库、任务等工具。
-- **Skill 插件化**：通过 `SKILL.md`、脚本、参考资料和依赖声明扩展 Agent 能力。
-- **知识库与长期记忆**：使用 Embedding 和向量存储构建本地语义检索能力。
-- **任务调度与通知**：支持后台任务、运行记录和 WebSocket 实时通知。
+- **Local-first**: configuration, sessions, tasks, knowledge base, skills, and runtime state are stored locally.
+- **Desktop configuration**: models, embeddings, agents, knowledge base, and general switches are configured in the frontend.
+- **Streaming Agent chat**: returns reasoning, content, tool calls, tool results, and other events over SSE.
+- **Extensible tool system**: includes built-in tools for files, commands, HTTP, browser control, document parsing, knowledge base, tasks, and more.
+- **Pluggable Skills**: extends Agent capabilities with `SKILL.md`, scripts, reference materials, and dependency declarations.
+- **Knowledge base and long-term memory**: builds local semantic retrieval using embeddings and vector storage.
+- **Task scheduling and notifications**: supports background tasks, run records, and WebSocket real-time notifications.
 
-## 界面预览
+## Screenshots
 
-主界面以对话为中心，左侧是功能导航，中间展示 Agent 的流式回复、思考状态和操作按钮，底部输入区支持文本输入、附件、提及和快捷入口。
+The main interface centers on conversation. The left side provides navigation, the middle displays the Agent's streaming replies, thinking state, and action buttons, and the bottom input area supports text input, attachments, mentions, and shortcuts.
 
-![Donk 主对话界面](docs/img/Snipaste_2026-05-27_14-32-01.png)
+![Donk main chat interface](docs/img/Snipaste_2026-05-27_14-32-01.png)
 
-| 灵感广场 | 任务管理 |
+| Idea Plaza | Task Management |
 | --- | --- |
-| <img src="docs/img/Snipaste_2026-05-27_14-32-40.png" alt="Donk 灵感广场" width="420"> | <img src="docs/img/Snipaste_2026-05-27_14-32-52.png" alt="Donk 任务管理" width="420"> |
-| 管理本地 Skill，快速查看 Agent 当前可用能力。 | 查看后台任务、运行状态、调度时间和启停状态。 |
+| <img src="docs/img/Snipaste_2026-05-27_14-32-40.png" alt="Donk Idea Plaza" width="420"> | <img src="docs/img/Snipaste_2026-05-27_14-32-52.png" alt="Donk Task Management" width="420"> |
+| Manage local Skills and quickly view the Agent's available capabilities. | View background tasks, run status, schedule times, and enabled state. |
 
-| 消息通知 | 设置中心 |
+| Notifications | Settings |
 | --- | --- |
-| <img src="docs/img/Snipaste_2026-05-27_14-33-15.png" alt="Donk 消息通知" width="420"> | <img src="docs/img/Snipaste_2026-05-27_14-33-53.png" alt="Donk 设置中心" width="420"> |
-| 集中展示任务交付、系统状态和后台事件。 | 配置 LLM、Embedding、Agent、知识库和通用开关。 |
+| <img src="docs/img/Snipaste_2026-05-27_14-33-15.png" alt="Donk Notifications" width="420"> | <img src="docs/img/Snipaste_2026-05-27_14-33-53.png" alt="Donk Settings" width="420"> |
+| Centralized display for task deliveries, system status, and background events. | Configure LLM, embedding, Agent, knowledge base, and general switches. |
 
-| 微信连接 | 关于页面 |
+| WeChat Connection | About |
 | --- | --- |
-| <img src="docs/img/Snipaste_2026-05-27_14-33-33.png" alt="Donk 微信连接" width="420"> | <img src="docs/img/Snipaste_2026-05-27_14-34-07.png" alt="Donk 关于页面" width="420"> |
-| 查看微信连接状态，支持断开连接。 | 展示应用名称、图标和版本信息。 |
+| <img src="docs/img/Snipaste_2026-05-27_14-33-33.png" alt="Donk WeChat Connection" width="420"> | <img src="docs/img/Snipaste_2026-05-27_14-34-07.png" alt="Donk About Page" width="420"> |
+| View WeChat connection status and disconnect when needed. | Display application name, icon, and version information. |
 
-## 当前能力
+## Current Capabilities
 
-### Agent 对话
+### Agent Chat
 
-- 通过 `POST /api/v1/chat` 提供 SSE 流式响应。
-- 支持用户输入确认、推理增量、内容增量、完整回复、工具调用、工具结果、警告和结束事件。
-- 支持历史记录加载、长期记忆检索、用户画像和 Token 统计。
-- Agent 可以通过工具注册表访问内置工具和 Skill 工具。
+- Provides SSE streaming responses through `POST /api/v1/chat`.
+- Supports user input confirmation, reasoning deltas, content deltas, complete responses, tool calls, tool results, warnings, and done events.
+- Supports loading history, retrieving long-term memory, user profiles, and token statistics.
+- The Agent can access built-in tools and Skill tools through the tool registry.
 
-### 模型与 Embedding
+### Models and Embeddings
 
-- LLM Provider 适配层位于 `donkserv/internal/model`。
-- 当前代码中包含 `openai`、`qwen`、`deepseek`、`doubao` 适配。
-- Embedding 适配层位于 `donkserv/internal/embedding`。
-- LLM 和 Embedding 配置通过配置服务持久化，可由桌面端设置页管理。
+- The LLM provider adapter layer is in `donkserv/internal/model`.
+- Current code includes adapters for `openai`, `qwen`, `deepseek`, and `doubao`.
+- The embedding adapter layer is in `donkserv/internal/embedding`.
+- LLM and embedding configuration is persisted by the configuration service and can be managed from the desktop settings page.
 
-### 工具系统
+### Tool System
 
-内置工具位于 `donkserv/internal/tool/builtin`，包括但不限于：
+Built-in tools live in `donkserv/internal/tool/builtin` and include, but are not limited to:
 
-- 文件读取与写入
-- 命令执行
-- HTTP 请求
-- 浏览器控制
-- 计算器
-- PDF 解析
-- Word 解析
-- 知识库搜索
-- 长期记忆保存与搜索
-- 对话历史搜索
-- 任务管理
-- Skill 调用
-- Skill 创建
-- Skill 安装
-- Python 脚本运行
-- Python 依赖管理
+- File reading and writing
+- Command execution
+- HTTP requests
+- Browser control
+- Calculator
+- PDF parsing
+- Word parsing
+- Knowledge base search
+- Long-term memory save and search
+- Conversation history search
+- Task management
+- Skill invocation
+- Skill creation
+- Skill installation
+- Python script execution
+- Python dependency management
 
-工具统一注册到 `tool.Registry`，再交给 Agent 决策调用。
+Tools are registered into `tool.Registry` and then made available for Agent decision-making.
 
-### Skill 扩展
+### Skill Extensions
 
-Donk 支持从本地目录加载 Skill：
+Donk supports loading Skills from a local directory:
 
 ```text
 donkserv/data/skills
 ```
 
-一个 Skill 通常包含：
+A typical Skill contains:
 
 ```text
 skill-name/
@@ -224,88 +228,88 @@ skill-name/
 └── assets/
 ```
 
-Skill 能力包括：
+Skill capabilities include:
 
-- 从 `SKILL.md` 读取技能说明和触发语义。
-- 加载脚本和参考资料。
-- 将启用的 Skill 注册为 Agent 可调用能力。
-- 通过 API 查询、启用、禁用、删除和重新扫描。
-- 通过文件监听实现变更后自动同步。
-- 支持脚本运行时和依赖声明。
+- Reading capability descriptions and trigger semantics from `SKILL.md`.
+- Loading scripts and reference materials.
+- Registering enabled Skills as Agent-callable capabilities.
+- Querying, enabling, disabling, deleting, and rescanning through APIs.
+- Automatically syncing changes through file watching.
+- Supporting script runtimes and dependency declarations.
 
-### 知识库
+### Knowledge Base
 
-知识库模块位于 `donkserv/internal/knowledge`，负责本地文档扫描、索引和语义检索。它会结合 Embedding 与向量存储，把本地文档变成 Agent 可搜索的上下文。
+The knowledge base module is in `donkserv/internal/knowledge`. It scans, indexes, and semantically retrieves local documents. It combines embeddings and vector storage to turn local documents into searchable Agent context.
 
-支持的能力包括：
+Supported capabilities include:
 
-- 定时扫描本地目录。
-- 配置扫描深度、批次大小、文件大小上限和扫描间隔。
-- 对知识文件进行冷热数据分层。
-- 通过 `knowledge_search` 工具提供语义检索。
-- 通过配置 API 控制启动、停止和状态查询。
+- Scheduled scanning of local directories.
+- Configurable scan depth, batch size, maximum file size, and scan interval.
+- Hot/cold data tiering for knowledge files.
+- Semantic retrieval through the `knowledge_search` tool.
+- Start, stop, and status query through configuration APIs.
 
-### 长期记忆与用户画像
+### Long-Term Memory and User Profile
 
-相关模块：
+Related modules:
 
 ```text
 donkserv/internal/memory
 donkserv/internal/profile
 ```
 
-能力包括：
+Capabilities include:
 
-- 对话历史保存。
-- 长期记忆保存和语义搜索。
-- 用户画像提取、更新和管理。
-- Agent 与 Creative 工作流共享历史记录和画像上下文。
+- Conversation history persistence.
+- Long-term memory persistence and semantic search.
+- User profile extraction, updates, and management.
+- Shared history and profile context between the Agent and Creative workflows.
 
-### 任务调度
+### Task Scheduling
 
-调度器位于 `donkserv/internal/scheduler`，支持：
+The scheduler is in `donkserv/internal/scheduler` and supports:
 
-- 一次性任务
-- 延迟任务
-- Cron 周期任务
-- Agent 任务执行器
-- 任务运行记录
-- 取消、触发、删除和查询
-- WebSocket 事件推送
+- One-time tasks
+- Delayed tasks
+- Cron recurring tasks
+- Agent task executor
+- Task run records
+- Cancel, trigger, delete, and query operations
+- WebSocket event push
 
-Agent 可以通过任务工具创建后台任务，实现“稍后提醒我”“每天执行一次”“定时整理资料”等工作流。
+The Agent can create background tasks through task tools for workflows such as "remind me later", "run this every day", and "organize these resources on a schedule".
 
-### Creative 工作流
+### Creative Workflow
 
-Creative 模块位于：
+The Creative module is in:
 
 ```text
 donkserv/internal/creative
 ```
 
-它提供比普通单轮 Agent 更复杂的运行时，适合目标拆解、创意生成、任务规划和分阶段执行。当前启动过程会注册默认 LLM Agents，并接入调度器、知识库、长期记忆、用户画像和 WebSocket Hook。
+It provides a more complex runtime than a normal single-turn Agent, suitable for goal decomposition, idea generation, task planning, and staged execution. The current startup process registers default LLM Agents and connects the scheduler, knowledge base, long-term memory, user profile, and WebSocket hooks.
 
-### 桌面客户端
+### Desktop Client
 
-Flutter 客户端位于 `donkui`，主要页面包括：
+The Flutter client is in `donkui`. Main pages include:
 
-- `home`：主聊天界面
-- `idea`：技能/想法相关界面
-- `task`：任务与运行记录
-- `notification`：通知中心
-- `setting`：模型、Embedding、Agent、知识库和应用设置
-- `onboarding`：首次配置引导
+- `home`: main chat interface
+- `idea`: Skill and idea-related interfaces
+- `task`: tasks and run records
+- `notification`: notification center
+- `setting`: model, embedding, Agent, knowledge base, and app settings
+- `onboarding`: first-run configuration guide
 
-客户端使用：
+The client uses:
 
-- `GetX` 做状态和依赖管理
-- `GoRouter` 做路由
-- `window_manager` 管理桌面窗口
-- `tray_manager` 支持托盘交互
-- SSE 客户端接收聊天流
-- WebSocket 客户端接收通知事件
+- `GetX` for state and dependency management
+- `GoRouter` for routing
+- `window_manager` for desktop window management
+- `tray_manager` for tray interaction
+- SSE client for chat streams
+- WebSocket client for notification events
 
-## 架构概览
+## Architecture Overview
 
 ```text
 ┌──────────────────────────────────────────────┐
@@ -332,37 +336,37 @@ Flutter 客户端位于 `donkui`，主要页面包括：
 └──────────────────────────────────────────────┘
 ```
 
-一次典型聊天请求的数据流：
+A typical chat request data flow:
 
-1. Flutter 通过 `POST /api/v1/chat` 发送用户消息。
-2. Go 后端创建 Agent 请求上下文。
-3. Agent 读取配置、历史记录、长期记忆、用户画像和可用工具。
-4. LLM 产生流式输出或工具调用意图。
-5. 工具注册表执行文件、命令、知识库、Skill、任务等工具。
-6. 后端用 SSE 持续返回事件。
-7. 如果产生后台任务或通知，WebSocket 推送到桌面端通知中心。
+1. Flutter sends a user message through `POST /api/v1/chat`.
+2. The Go backend creates the Agent request context.
+3. The Agent reads configuration, history, long-term memory, user profile, and available tools.
+4. The LLM produces streaming output or tool-call intent.
+5. The tool registry executes tools such as files, commands, knowledge base, Skills, and tasks.
+6. The backend continuously returns events over SSE.
+7. If background tasks or notifications are produced, WebSocket pushes them to the desktop notification center.
 
-## 技术栈
+## Tech Stack
 
-| 层级 | 技术 |
+| Layer | Technology |
 | --- | --- |
-| 后端语言 | Go |
-| HTTP 服务 | Gin |
-| 实时通信 | HTTP SSE、gorilla/websocket |
-| 数据库 | SQLite |
-| 向量存储 | cortexdb |
-| 调度 | robfig/cron |
-| 文档解析 | PDF、Word 解析工具 |
-| 前端 | Flutter Windows |
-| 前端状态 | GetX |
-| 前端路由 | GoRouter |
-| 桌面能力 | window_manager、tray_manager |
-| 模型 | OpenAI、Qwen、DeepSeek、Doubao Provider Adapter |
+| Backend language | Go |
+| HTTP service | Gin |
+| Real-time communication | HTTP SSE, gorilla/websocket |
+| Database | SQLite |
+| Vector storage | cortexdb |
+| Scheduling | robfig/cron |
+| Document parsing | PDF and Word parsing tools |
+| Frontend | Flutter Windows |
+| Frontend state | GetX |
+| Frontend routing | GoRouter |
+| Desktop capability | window_manager, tray_manager |
+| Models | OpenAI, Qwen, DeepSeek, Doubao provider adapters |
 
-## 目录结构
+## Directory Structure
 
 <details>
-<summary>展开查看仓库目录</summary>
+<summary>Expand repository structure</summary>
 
 ```text
 .
@@ -371,35 +375,35 @@ Flutter 客户端位于 `donkui`，主要页面包括：
 ├── docs/
 ├── donkserv/
 │   ├── cmd/
-│   │   ├── aclaw.go           # 应用总装配与启动流程
-│   │   ├── agent.go           # Agent 构建器
-│   │   ├── http.go            # HTTP 服务与基础路由
-│   │   ├── websocket.go       # WebSocket 事件服务
-│   │   ├── scheduler.go       # 调度器装配
-│   │   ├── background.go      # 后台 Agent 服务
-│   │   └── init.go            # 应用与数据库初始化
-│   ├── conf/                  # 内置默认资源和后台服务配置
+│   │   ├── aclaw.go           # Application assembly and startup flow
+│   │   ├── agent.go           # Agent builder
+│   │   ├── http.go            # HTTP service and base routes
+│   │   ├── websocket.go       # WebSocket event service
+│   │   ├── scheduler.go       # Scheduler assembly
+│   │   ├── background.go      # Background Agent service
+│   │   └── init.go            # Application and database initialization
+│   ├── conf/                  # Built-in default resources and background service config
 │   ├── internal/
-│   │   ├── agent/             # Agent 主运行逻辑
-│   │   ├── background/        # 后台 Agent Runner
-│   │   ├── config/            # 数据目录与路径配置
-│   │   ├── conversation/      # 会话管理
-│   │   ├── creative/          # Creative 运行时
-│   │   ├── db/                # 数据库与向量库管理
+│   │   ├── agent/             # Main Agent runtime logic
+│   │   ├── background/        # Background Agent Runner
+│   │   ├── config/            # Data directory and path configuration
+│   │   ├── conversation/      # Conversation management
+│   │   ├── creative/          # Creative runtime
+│   │   ├── db/                # Database and vector database management
 │   │   ├── embedding/         # Embedding Provider
-│   │   ├── http/              # HTTP server、middleware、chat handler
-│   │   ├── knowledge/         # 知识库扫描、索引、搜索
-│   │   ├── memory/            # 历史记录与长期记忆
+│   │   ├── http/              # HTTP server, middleware, chat handler
+│   │   ├── knowledge/         # Knowledge base scan, index, search
+│   │   ├── memory/            # History and long-term memory
 │   │   ├── model/             # LLM Provider
-│   │   ├── profile/           # 用户画像
-│   │   ├── prompt/            # 系统提示词和工具提示词
-│   │   ├── scheduler/         # 调度任务和运行记录
-│   │   ├── setting/           # 配置存储与 API
-│   │   ├── skill/             # Skill 加载、解析、注册、执行
-│   │   ├── sql/               # SQLite 表结构和连接
-│   │   ├── token/             # Token 统计和预算
-│   │   ├── tool/              # 工具接口、注册表和内置工具
-│   │   └── websocket/         # WebSocket Hub、Client、Message
+│   │   ├── profile/           # User profile
+│   │   ├── prompt/            # System prompts and tool prompts
+│   │   ├── scheduler/         # Scheduled tasks and run records
+│   │   ├── setting/           # Configuration storage and API
+│   │   ├── skill/             # Skill loading, parsing, registration, execution
+│   │   ├── sql/               # SQLite table schema and connection
+│   │   ├── token/             # Token statistics and budget
+│   │   ├── tool/              # Tool interfaces, registry, and built-in tools
+│   │   └── websocket/         # WebSocket Hub, Client, Message
 │   ├── pkg/
 │   │   ├── config/
 │   │   ├── context/
@@ -409,23 +413,23 @@ Flutter 客户端位于 `donkui`，主要页面包括：
 │   │   ├── logger/
 │   │   ├── schema/
 │   │   └── websocket/
-│   ├── data/                  # 运行时数据、技能、知识库、历史记录
-│   ├── sh/                    # 后端构建脚本
+│   ├── data/                  # Runtime data, skills, knowledge base, history
+│   ├── sh/                    # Backend build scripts
 │   ├── go.mod
 │   └── go.sum
 └── donkui/
     ├── lib/
     │   ├── app/
-    │   │   ├── conf/          # 前端服务地址等配置
-    │   │   ├── init/          # App 初始化
-    │   │   ├── layout/        # 桌面布局
-    │   │   └── router/        # GoRouter 路由
+    │   │   ├── conf/          # Frontend service address and other config
+    │   │   ├── init/          # App initialization
+    │   │   ├── layout/        # Desktop layout
+    │   │   └── router/        # GoRouter routes
     │   ├── common/
-    │   │   ├── client/        # SSE/WebSocket/HTTP 客户端
-    │   │   ├── model/         # 前端数据模型
-    │   │   ├── service/       # 设置、任务、技能、通知等服务
-    │   │   └── widget/        # 通用组件
-    │   ├── l10n/              # 本地化文案
+    │   │   ├── client/        # SSE/WebSocket/HTTP clients
+    │   │   ├── model/         # Frontend data models
+    │   │   ├── service/       # Settings, tasks, skills, notifications, and other services
+    │   │   └── widget/        # Shared widgets
+    │   ├── l10n/              # Localization strings
     │   └── ui/
     │       ├── home/
     │       ├── idea/
@@ -434,8 +438,8 @@ Flutter 客户端位于 `donkui`，主要页面包括：
     │       ├── setting/
     │       └── task/
     ├── assets/
-    ├── docs/                  # 前后端协议文档
-    ├── scripts/               # Windows 安装包脚本
+    ├── docs/                  # Frontend/backend protocol docs
+    ├── scripts/               # Windows installer scripts
     ├── windows/
     ├── pubspec.yaml
     └── pubspec.lock
@@ -443,27 +447,27 @@ Flutter 客户端位于 `donkui`，主要页面包括：
 
 </details>
 
-## 快速开始
+## Quick Start
 
-### 环境要求
+### Requirements
 
 - Windows 10/11
-- Go 1.26 或更高版本
-- Flutter SDK 3.7 或更高版本
-- Windows 桌面开发环境
-- SQLite CGO 构建环境
-- 可用的 LLM API Key
-- 可选：Embedding API Key，用于知识库检索和长期记忆
-- 可选：Inno Setup，用于构建 Windows 安装包
+- Go 1.26 or later
+- Flutter SDK 3.7 or later
+- Windows desktop development environment
+- SQLite CGO build environment
+- Available LLM API key
+- Optional: embedding API key for knowledge base retrieval and long-term memory
+- Optional: Inno Setup for building the Windows installer
 
-### 1. 克隆项目
+### 1. Clone the Project
 
 ```powershell
 git clone https://github.com/longstageai/dank.git
 cd dank
 ```
 
-### 2. 启动后端
+### 2. Start the Backend
 
 ```powershell
 cd donkserv
@@ -471,21 +475,21 @@ go mod download
 go run ./cmd
 ```
 
-服务默认监听：
+The service listens on:
 
 ```text
 http://localhost:65434
 ```
 
-健康检查：
+Health check:
 
 ```powershell
 curl http://localhost:65434/health
 ```
 
-### 3. 启动桌面端
+### 3. Start the Desktop Client
 
-另开一个终端：
+Open another terminal:
 
 ```powershell
 cd donkui
@@ -493,13 +497,13 @@ flutter pub get
 flutter run -d windows
 ```
 
-前端默认连接地址定义在：
+The frontend default connection addresses are defined in:
 
 ```text
 donkui/lib/app/conf/config.dart
 ```
 
-默认值：
+Default values:
 
 ```text
 API: http://localhost:65434/api/v1
@@ -507,44 +511,44 @@ SSE: http://localhost:65434/api/v1/chat
 WebSocket: ws://localhost:65434/ws/events
 ```
 
-当前 `donkui/lib/app/init/app.dart` 中自动启动后端进程的调用处于注释状态，开发时需要先手动启动 `donkserv`。
+The automatic backend process startup call in `donkui/lib/app/init/app.dart` is currently commented out. During development, start `donkserv` manually first.
 
-### 4. 在桌面端完成配置
+### 4. Complete Configuration in the Desktop Client
 
-Donk 的模型、Embedding、Agent、知识库和通用开关都在桌面端配置。
+Donk's model, embedding, Agent, knowledge base, and general switches are configured in the desktop client.
 
-首次启动时进入引导页，按步骤填写：
+On first launch, the onboarding page will guide you through:
 
-- LLM Provider、模型名称、API Key、Base URL
-- Embedding Provider、模型名称、API Key、Base URL
-- Agent 运行参数
+- LLM provider, model name, API key, and Base URL
+- Embedding provider, model name, API key, and Base URL
+- Agent runtime parameters
 
-后续可以在 `设置` 中继续调整：
+You can continue adjusting them later in `Settings`:
 
-- `LLM 设置`：切换模型供应商、模型、密钥和接口地址。
-- `Embedding 设置`：配置向量模型，用于知识库检索和长期记忆。
-- `Agent 设置`：调整 Agent 循环次数、超时、历史记录和 Token 预算。
-- `通用设置`：切换语言、安全防护、知识库自动构建和休眠阻止。
-- `用量统计`：查看 Token 使用情况和预算状态。
+- `LLM Settings`: switch model provider, model, key, and endpoint.
+- `Embedding Settings`: configure vector models for knowledge base retrieval and long-term memory.
+- `Agent Settings`: adjust Agent loop count, timeout, history, and token budget.
+- `General Settings`: switch language, security guard, knowledge base auto-build, and sleep prevention.
+- `Usage Statistics`: view token usage and budget status.
 
-## 配置说明
+## Configuration
 
-Donk 的运行配置由配置服务持久化，桌面端通过设置页面读写这些配置。对普通用户来说，配置入口都在前端页面。
+Donk runtime configuration is persisted by the configuration service. The desktop client reads and writes it through the settings pages. For normal users, all configuration entry points are in the frontend.
 
-### 配置入口
+### Configuration Entry Points
 
-| 页面 | 配置内容 | 用途 |
+| Page | Configuration | Purpose |
 | --- | --- | --- |
-| 首次引导 | LLM、Embedding 基础参数 | 首次启动时让 Agent 具备可用模型 |
-| LLM 设置 | Provider、模型、API Key、Base URL | 控制聊天和 Agent 推理使用的模型 |
-| Embedding 设置 | Provider、模型、API Key、Base URL | 控制知识库、长期记忆等语义检索能力 |
-| Agent 设置 | 循环次数、收敛参数、超时、历史记录、Token 预算 | 控制 Agent 行为边界 |
-| 通用设置 | 语言、安全防护、知识库自动构建、休眠阻止 | 控制应用级开关 |
-| 用量统计 | Token 使用量、预算状态 | 查看模型调用消耗 |
+| Onboarding | Basic LLM and embedding parameters | Gives the Agent usable models on first startup |
+| LLM Settings | Provider, model, API key, Base URL | Controls the model used for chat and Agent reasoning |
+| Embedding Settings | Provider, model, API key, Base URL | Controls semantic retrieval for knowledge base and long-term memory |
+| Agent Settings | Loop count, convergence parameters, timeout, history, token budget | Controls Agent behavior boundaries |
+| General Settings | Language, security guard, knowledge base auto-build, sleep prevention | Controls application-level switches |
+| Usage Statistics | Token usage and budget status | Shows model call consumption |
 
-### 模型配置
+### Model Configuration
 
-LLM 配置决定 Donk 对话和 Agent 推理使用哪个模型。当前后端适配层支持：
+LLM configuration determines which model Donk uses for chat and Agent reasoning. The current backend adapter layer supports:
 
 ```text
 openai
@@ -553,99 +557,99 @@ deepseek
 doubao
 ```
 
-在桌面端 `设置 -> LLM 设置` 中填写供应商、模型名、API Key 和可选 Base URL 后，配置会写入本地数据库，后续请求会使用最新配置。
+After you fill in the provider, model name, API key, and optional Base URL in `Settings -> LLM Settings`, the configuration is written to the local database and subsequent requests use the latest configuration.
 
-### Embedding 配置
+### Embedding Configuration
 
-Embedding 配置用于知识库检索、长期记忆和语义搜索。如果只使用基础聊天，可以先不配置 Embedding；如果需要知识库和记忆能力，应在 `设置 -> Embedding 设置` 中补齐供应商、模型名、API Key 和 Base URL。
+Embedding configuration is used for knowledge base retrieval, long-term memory, and semantic search. If you only use basic chat, you can skip embedding configuration at first. If you need knowledge base and memory features, complete the provider, model name, API key, and Base URL in `Settings -> Embedding Settings`.
 
-### Agent 配置
+### Agent Configuration
 
-Agent 配置在 `设置 -> Agent 设置` 中管理，主要控制：
+Agent configuration is managed in `Settings -> Agent Settings` and mainly controls:
 
-- `max_loop` 控制 Agent 单次任务最大循环次数。
-- `converge_after` 控制收敛判定相关行为。
-- `timeout` 控制 Agent 运行超时。
-- `history_max_entries` 控制加载的历史条数。
-- `history_max_days` 控制历史记录保留时间。
-- `daily_token_limit` 控制每日 Token 预算。
+- `max_loop`: maximum loop count for a single Agent task.
+- `converge_after`: behavior related to convergence detection.
+- `timeout`: Agent runtime timeout.
+- `history_max_entries`: number of history entries to load.
+- `history_max_days`: history retention period.
+- `daily_token_limit`: daily token budget.
 
-### 知识库配置
+### Knowledge Base Configuration
 
-知识库开关和自动构建策略在 `设置 -> 通用设置` 与知识库相关配置页中管理。知识库依赖 Embedding 配置，启用后会扫描本地文档并建立可检索索引。
+Knowledge base switches and auto-build strategy are managed in `Settings -> General Settings` and related knowledge base configuration pages. The knowledge base depends on embedding configuration. After it is enabled, Donk scans local documents and builds searchable indexes.
 
-主要参数包括：
+Main parameters include:
 
-- `enabled` 是否启用知识库自动构建。
-- `interval` 扫描间隔，单位秒。
-- `batch_size` 每批处理文件数。
-- `sleep_ms` 批处理间隔，避免占用过高。
-- `max_depth` 目录扫描深度。
-- `max_file_size` 单文件大小上限。
-- `directories` 为空时使用默认目录策略。
+- `enabled`: whether to enable knowledge base auto-build.
+- `interval`: scan interval in seconds.
+- `batch_size`: number of files processed per batch.
+- `sleep_ms`: delay between batches to avoid excessive resource usage.
+- `max_depth`: directory scan depth.
+- `max_file_size`: maximum size for a single file.
+- `directories`: uses the default directory strategy when empty.
 
-### 本地持久化
+### Local Persistence
 
-桌面端提交配置后，后端会把配置保存到本地 SQLite 数据库。应用重启后会从数据库读取最新配置，因此日常使用只需要操作前端页面。
+After the desktop client submits configuration, the backend saves it to the local SQLite database. On restart, the app reads the latest configuration from the database, so day-to-day use only requires operating the frontend pages.
 
 ## HTTP API
 
-后端主要 API：
+Main backend APIs:
 
 <details>
-<summary>展开查看 API 列表</summary>
+<summary>Expand API list</summary>
 
-| 能力 | 方法与路径 | 说明 |
+| Capability | Method and Path | Description |
 | --- | --- | --- |
-| 健康检查 | `GET /health` | 检查服务是否运行 |
-| 流式聊天 | `POST /api/v1/chat` | Agent SSE 对话 |
-| 完整配置 | `GET /api/v1/config` | 获取完整配置 |
-| 完整配置 | `PUT /api/v1/config` | 更新完整配置 |
-| LLM 配置 | `GET /api/v1/config/llm` | 获取 LLM 配置 |
-| LLM 配置 | `PUT /api/v1/config/llm` | 更新 LLM 配置 |
-| Embedding 配置 | `GET /api/v1/config/embedding` | 获取 Embedding 配置 |
-| Embedding 配置 | `PUT /api/v1/config/embedding` | 更新 Embedding 配置 |
-| Agent 配置 | `GET /api/v1/config/agent` | 获取 Agent 配置 |
-| Agent 配置 | `PUT /api/v1/config/agent` | 更新 Agent 配置 |
-| 知识库配置 | `GET /api/v1/config/knowledge` | 获取知识库配置 |
-| 知识库配置 | `PUT /api/v1/config/knowledge` | 更新知识库配置 |
-| 知识库状态 | `GET /api/v1/knowledge/status` | 查询知识库状态 |
-| 知识库控制 | `POST /api/v1/knowledge/start` | 启动知识库 |
-| 知识库控制 | `POST /api/v1/knowledge/stop` | 停止知识库 |
-| 睡眠状态 | `GET /api/v1/system/sleep` | 查询系统睡眠阻止状态 |
-| 阻止睡眠 | `POST /api/v1/system/sleep/prevent` | 阻止系统睡眠 |
-| 允许睡眠 | `POST /api/v1/system/sleep/allow` | 允许系统睡眠 |
-| Skill 列表 | `GET /api/v1/skills` | 获取 Skill 列表 |
-| Skill 扫描 | `POST /api/v1/skills/rescan` | 重新扫描 Skill |
-| Skill 详情 | `GET /api/v1/skills/:name` | 获取指定 Skill |
-| Skill 删除 | `DELETE /api/v1/skills/:name` | 删除指定 Skill |
-| Skill 启用 | `POST /api/v1/skills/:name/enable` | 启用 Skill |
-| Skill 禁用 | `POST /api/v1/skills/:name/disable` | 禁用 Skill |
-| Skill 指令 | `GET /api/v1/skills/:name/instructions` | 获取 Skill 指令 |
-| Skill 脚本 | `GET /api/v1/skills/:name/scripts` | 获取脚本列表 |
-| Skill 脚本内容 | `GET /api/v1/skills/:name/scripts/:script` | 获取脚本内容 |
-| 创建任务 | `POST /api/v1/tasks` | 创建调度任务 |
-| 任务列表 | `GET /api/v1/tasks` | 查询任务列表 |
-| 任务详情 | `GET /api/v1/tasks/:id` | 查询任务详情 |
-| 删除任务 | `DELETE /api/v1/tasks/:id` | 删除任务 |
-| 取消任务 | `POST /api/v1/tasks/:id/cancel` | 取消任务 |
-| 触发任务 | `POST /api/v1/tasks/:id/run` | 手动触发任务 |
-| 任务结果 | `GET /api/v1/tasks/:id/result` | 查询任务结果 |
-| 任务运行记录 | `GET /api/v1/tasks/:id/runs` | 查询任务运行记录 |
-| 运行记录列表 | `GET /api/v1/runs` | 查询所有运行记录 |
-| 运行记录详情 | `GET /api/v1/runs/:id` | 查询运行记录详情 |
-| 删除运行记录 | `DELETE /api/v1/runs/:id` | 删除运行记录 |
-| Token 使用 | `GET /api/v1/tokens/usage` | 查询 Token 使用列表 |
-| Token 预算 | `GET /api/v1/tokens/budget` | 查询 Token 预算状态 |
-| Creative 状态 | `GET /api/v1/creative/status` | 查询 Creative 状态 |
-| Creative 启动 | `POST /api/v1/creative/start` | 启动 Creative 工作流 |
-| Creative 停止 | `POST /api/v1/creative/stop` | 停止 Creative 工作流 |
-| WebSocket 事件 | `GET /ws/events` | 通知和任务事件推送 |
-| WebSocket 测试 | `POST /ws/test-push` | 手动推送测试通知 |
+| Health check | `GET /health` | Checks whether the service is running |
+| Streaming chat | `POST /api/v1/chat` | Agent SSE conversation |
+| Full configuration | `GET /api/v1/config` | Gets full configuration |
+| Full configuration | `PUT /api/v1/config` | Updates full configuration |
+| LLM configuration | `GET /api/v1/config/llm` | Gets LLM configuration |
+| LLM configuration | `PUT /api/v1/config/llm` | Updates LLM configuration |
+| Embedding configuration | `GET /api/v1/config/embedding` | Gets embedding configuration |
+| Embedding configuration | `PUT /api/v1/config/embedding` | Updates embedding configuration |
+| Agent configuration | `GET /api/v1/config/agent` | Gets Agent configuration |
+| Agent configuration | `PUT /api/v1/config/agent` | Updates Agent configuration |
+| Knowledge configuration | `GET /api/v1/config/knowledge` | Gets knowledge base configuration |
+| Knowledge configuration | `PUT /api/v1/config/knowledge` | Updates knowledge base configuration |
+| Knowledge status | `GET /api/v1/knowledge/status` | Queries knowledge base status |
+| Knowledge control | `POST /api/v1/knowledge/start` | Starts the knowledge base |
+| Knowledge control | `POST /api/v1/knowledge/stop` | Stops the knowledge base |
+| Sleep status | `GET /api/v1/system/sleep` | Queries system sleep prevention status |
+| Prevent sleep | `POST /api/v1/system/sleep/prevent` | Prevents system sleep |
+| Allow sleep | `POST /api/v1/system/sleep/allow` | Allows system sleep |
+| Skill list | `GET /api/v1/skills` | Gets Skill list |
+| Skill rescan | `POST /api/v1/skills/rescan` | Rescans Skills |
+| Skill detail | `GET /api/v1/skills/:name` | Gets a specified Skill |
+| Skill delete | `DELETE /api/v1/skills/:name` | Deletes a specified Skill |
+| Skill enable | `POST /api/v1/skills/:name/enable` | Enables a Skill |
+| Skill disable | `POST /api/v1/skills/:name/disable` | Disables a Skill |
+| Skill instructions | `GET /api/v1/skills/:name/instructions` | Gets Skill instructions |
+| Skill scripts | `GET /api/v1/skills/:name/scripts` | Gets script list |
+| Skill script content | `GET /api/v1/skills/:name/scripts/:script` | Gets script content |
+| Create task | `POST /api/v1/tasks` | Creates a scheduled task |
+| Task list | `GET /api/v1/tasks` | Queries task list |
+| Task detail | `GET /api/v1/tasks/:id` | Queries task detail |
+| Delete task | `DELETE /api/v1/tasks/:id` | Deletes a task |
+| Cancel task | `POST /api/v1/tasks/:id/cancel` | Cancels a task |
+| Trigger task | `POST /api/v1/tasks/:id/run` | Manually triggers a task |
+| Task result | `GET /api/v1/tasks/:id/result` | Queries task result |
+| Task runs | `GET /api/v1/tasks/:id/runs` | Queries task run records |
+| Run list | `GET /api/v1/runs` | Queries all run records |
+| Run detail | `GET /api/v1/runs/:id` | Queries run record detail |
+| Delete run | `DELETE /api/v1/runs/:id` | Deletes a run record |
+| Token usage | `GET /api/v1/tokens/usage` | Queries token usage list |
+| Token budget | `GET /api/v1/tokens/budget` | Queries token budget status |
+| Creative status | `GET /api/v1/creative/status` | Queries Creative status |
+| Creative start | `POST /api/v1/creative/start` | Starts Creative workflow |
+| Creative stop | `POST /api/v1/creative/stop` | Stops Creative workflow |
+| WebSocket events | `GET /ws/events` | Pushes notification and task events |
+| WebSocket test | `POST /ws/test-push` | Manually pushes a test notification |
 
 </details>
 
-更详细协议可参考：
+For more detailed protocols, see:
 
 ```text
 donkui/docs/agent_protocol.md
@@ -656,9 +660,9 @@ donkui/docs/scheduler-api.md
 donkui/docs/knowledge-base.md
 ```
 
-## SSE 聊天接口示例
+## SSE Chat API Example
 
-请求：
+Request:
 
 ```http
 POST /api/v1/chat
@@ -666,15 +670,15 @@ Content-Type: application/json
 Accept: text/event-stream
 ```
 
-请求体：
+Request body:
 
 ```json
 {
-  "content": "帮我总结今天需要处理的任务"
+  "content": "Help me summarize the tasks I need to handle today"
 }
 ```
 
-服务端会返回 SSE 事件流，典型事件包括：
+The server returns an SSE event stream. Typical events include:
 
 ```text
 event: user_input
@@ -699,9 +703,9 @@ event: done
 data: {...}
 ```
 
-## Skill 开发
+## Skill Development
 
-### 基本结构
+### Basic Structure
 
 ```text
 my-skill/
@@ -713,40 +717,40 @@ my-skill/
 └── assets/
 ```
 
-### `SKILL.md` 示例
+### `SKILL.md` Example
 
 ```markdown
 ---
 name: my-skill
-description: 用于处理某类特定任务的 Skill，当用户需要执行该类任务时使用。
+description: A Skill for handling a specific category of tasks. Use it when the user needs this kind of task.
 version: 1.0.0
 ---
 
 # My Skill
 
-当用户提出某类任务时，读取本说明并执行 `scripts/main.py`。
+When the user requests this category of task, read these instructions and execute `scripts/main.py`.
 
-## 输入
+## Input
 
-- task: 用户要处理的问题
+- task: the problem the user wants to handle
 
-## 输出
+## Output
 
-返回结构化处理结果。
+Returns structured processing results.
 ```
 
-### 加载流程
+### Loading Flow
 
-1. Skill 文件放入 `donkserv/data/skills`。
-2. 后端启动时扫描 Skill。
-3. Skill 状态同步到数据库。
-4. 启用的 Skill 注册到 Skill Registry。
-5. Agent 通过 `skill` 工具读取说明、执行脚本或获取参考资料。
-6. Skill 文件变更后 Watcher 会尝试同步。
+1. Put Skill files into `donkserv/data/skills`.
+2. The backend scans Skills on startup.
+3. Skill state is synced to the database.
+4. Enabled Skills are registered into the Skill Registry.
+5. The Agent uses the `skill` tool to read instructions, execute scripts, or fetch reference materials.
+6. After Skill files change, the watcher attempts to sync them.
 
-## 本地数据
+## Local Data
 
-Donk 会在后端数据目录中保存运行时数据，例如：
+Donk stores runtime data in the backend data directory, for example:
 
 ```text
 donkserv/data/db/
@@ -756,41 +760,41 @@ donkserv/data/skills/
 donkserv/data/script_runtime/
 ```
 
-这些目录可能包含：
+These directories may contain:
 
-- SQLite 数据库
-- 会话历史
-- 用户记忆
-- 知识库索引
-- 向量数据
-- 本地 Skill
-- Python 运行时和依赖
+- SQLite databases
+- Conversation history
+- User memory
+- Knowledge base indexes
+- Vector data
+- Local Skills
+- Python runtime and dependencies
 
-如果项目开源或发布到 GitHub，需要避免提交真实运行数据、用户文件、数据库、向量库和 API Key。
+If the project is open-sourced or published to GitHub, avoid committing real runtime data, user files, databases, vector stores, and API keys.
 
-## 构建
+## Build
 
-### 后端构建
+### Backend Build
 
 ```powershell
 cd donkserv
 .\sh\build.bat
 ```
 
-输出：
+Output:
 
 ```text
 donkserv/sh/donk.exe
 ```
 
-也可以直接使用 Go：
+You can also use Go directly:
 
 ```powershell
 cd donkserv
 go build -ldflags="-s -w" -o sh\donk.exe ./cmd/...
 ```
 
-### Flutter Windows 构建
+### Flutter Windows Build
 
 ```powershell
 cd donkui
@@ -798,34 +802,34 @@ flutter pub get
 flutter build windows --release
 ```
 
-### 安装包构建
+### Installer Build
 
-安装包脚本位于：
+The installer script is located at:
 
 ```text
 donkui/scripts/build_installer.bat
 ```
 
-执行：
+Run:
 
 ```powershell
 cd donkui
 .\scripts\build_installer.bat
 ```
 
-该脚本依赖 Inno Setup，并会检查：
+This script depends on Inno Setup and checks for:
 
 ```text
 donkui/server/donk.exe
 ```
 
-用于把后端服务随桌面端一起分发。发布前需要先构建后端并放到安装脚本期望的位置。
+It is used to distribute the backend service together with the desktop client. Before release, build the backend first and place it where the installer script expects it.
 
-## 开发建议
+## Development Notes
 
-### 后端开发
+### Backend Development
 
-常用命令：
+Common commands:
 
 ```powershell
 cd donkserv
@@ -833,17 +837,17 @@ go test ./...
 go run ./cmd
 ```
 
-关注模块：
+Key modules:
 
-- 新增模型：修改 `internal/model` 和必要配置结构。
-- 新增工具：在 `internal/tool/builtin` 实现工具，再注册到工具注册表。
-- 新增 API：在对应模块 Handler 中注册路由。
-- 新增知识库能力：修改 `internal/knowledge`。
-- 新增 Skill 行为：修改 `internal/skill` 或内置 `SkillTool`。
+- Add a model: modify `internal/model` and required configuration structures.
+- Add a tool: implement it in `internal/tool/builtin`, then register it in the tool registry.
+- Add an API: register routes in the corresponding module handler.
+- Add knowledge base capability: modify `internal/knowledge`.
+- Add Skill behavior: modify `internal/skill` or the built-in `SkillTool`.
 
-### 前端开发
+### Frontend Development
 
-常用命令：
+Common commands:
 
 ```powershell
 cd donkui
@@ -851,49 +855,49 @@ flutter pub get
 flutter run -d windows
 ```
 
-关注模块：
+Key modules:
 
-- 服务地址：`lib/app/conf/config.dart`
-- 路由：`lib/app/router/routes.dart`
-- 主聊天：`lib/ui/home`
-- 设置页：`lib/ui/setting`
-- 任务页：`lib/ui/task`
-- 通知页：`lib/ui/notification`
-- 前后端服务封装：`lib/common/service`
-- SSE 和 WebSocket 客户端：`lib/common/client`
+- Service address: `lib/app/conf/config.dart`
+- Routes: `lib/app/router/routes.dart`
+- Main chat: `lib/ui/home`
+- Settings page: `lib/ui/setting`
+- Task page: `lib/ui/task`
+- Notification page: `lib/ui/notification`
+- Frontend/backend service wrappers: `lib/common/service`
+- SSE and WebSocket clients: `lib/common/client`
 
-## 运行注意事项
+## Runtime Notes
 
-- 当前桌面端窗口默认大小和最小大小都是 `960x720`。
-- Flutter 客户端使用单实例服务，重复启动时新实例会退出。
-- 窗口关闭时默认隐藏到托盘，不等同于停止后端。
-- 开发模式下需要手动启动后端服务。
-- 后端端口当前固定为 `65434`。
-- 如果知识库或长期记忆不可用，通常是 Embedding 配置缺失或初始化失败。
-- 如果聊天无响应，优先检查 LLM Provider、API Key、Base URL 和模型名称。
-- 如果 Skill 不出现，检查 `data/skills` 目录、`SKILL.md` frontmatter 和启用状态。
+- The current desktop window default size and minimum size are both `960x720`.
+- The Flutter client uses a single-instance service. When launched repeatedly, the new instance exits.
+- Closing the window hides it to the tray by default; this is not the same as stopping the backend.
+- In development mode, the backend service must be started manually.
+- The backend port is currently fixed at `65434`.
+- If the knowledge base or long-term memory is unavailable, the usual cause is missing embedding configuration or initialization failure.
+- If chat does not respond, first check LLM provider, API key, Base URL, and model name.
+- If a Skill does not appear, check the `data/skills` directory, `SKILL.md` frontmatter, and enabled state.
 
-## 安全说明
+## Security Notes
 
-Donk 具备较强的本地执行能力，包括命令执行、文件读写、HTTP 请求、浏览器控制和脚本运行。因此在使用和扩展时需要注意：
+Donk has powerful local execution capabilities, including command execution, file read/write, HTTP requests, browser control, and script execution. Be careful when using and extending it:
 
-- 不要加载来源不可信的 Skill。
-- 不要把真实 API Key 写入公开仓库。
-- 不要提交 `data/db`、`data/history`、`data/knowledge` 等运行时数据。
-- 对命令执行、文件写入和脚本运行工具保持谨慎。
-- 面向外部网络开放后端端口前，应启用认证并限制访问来源。
+- Do not load Skills from untrusted sources.
+- Do not commit real API keys to public repositories.
+- Do not commit runtime data such as `data/db`, `data/history`, and `data/knowledge`.
+- Be cautious with command execution, file writing, and script execution tools.
+- Before exposing the backend port to external networks, enable authentication and restrict access sources.
 
-## 已知状态
+## Known Status
 
-该仓库仍处于快速开发状态，代码中存在一些历史痕迹：
+This repository is still under rapid development and contains some historical traces:
 
-- 部分注释存在编码显示问题。
-- `donkserv/data` 下可能包含本地运行时数据和示例技能。
-- 前端自动拉起后端进程的逻辑目前被注释。
-- 配置入口以桌面端首次引导和设置中心为准，应用重启后会继续使用已保存的本地配置。
+- Some comments have encoding display issues.
+- `donkserv/data` may contain local runtime data and example Skills.
+- The frontend logic for automatically starting the backend process is currently commented out.
+- Configuration entry points are based on the desktop onboarding flow and settings center. After restart, the app continues using saved local configuration.
 
-这些不影响理解整体架构，但在正式开源前建议进一步清理运行时数据、示例密钥和编码问题。
+These do not affect understanding the overall architecture, but before formal open source release, runtime data, example secrets, and encoding issues should be cleaned up further.
 
 ## License
 
-本项目使用 GPL-3.0 License，详见 [LICENSE](LICENSE)。
+This project uses the GPL-3.0 License. See [LICENSE](LICENSE) for details.

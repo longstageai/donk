@@ -170,7 +170,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                 ),
                 IconButton(
                   onPressed: widget.onMessageTap,
-                  icon: const Icon(Icons.camera_rear, size: 20),
+                  icon: const Icon(Icons.sms, size: 20),
                   tooltip: 'agent',
                 ),
               ],

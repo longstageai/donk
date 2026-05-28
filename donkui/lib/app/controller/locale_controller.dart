@@ -8,7 +8,7 @@ class LocaleController extends GetxController {
   static LocaleController get to => Get.find();
 
   /// 当前语言代码
-  final RxString _languageCode = 'zh'.obs;
+  final RxString _languageCode = 'en'.obs;
   String get languageCode => _languageCode.value;
 
   /// 当前 Locale

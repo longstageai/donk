@@ -160,7 +160,7 @@ func formatRecentHistory(store *memory.HistoryStore) string {
 	}
 
 	// 获取最近10条对话记录
-	entries, err := store.GetRecent(10)
+	entries, err := store.GetRecent(500)
 	if err != nil {
 		return fmt.Sprintf("获取对话记录失败: %v", err)
 	}
