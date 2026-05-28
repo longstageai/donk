@@ -76,7 +76,7 @@
 
 ## 🚀 快速开始
 
-1. 从 [Releases](https://github.com/longstageai/dank/releases) 页面下载最新版本
+1. 从 [Releases](https://github.com/longstageai/donk/releases) 页面下载最新版本
 2. 双击安装，按照向导完成初始设置
 3. 告诉核动驴你是谁，你想让它帮你做什么
 4. 最小化窗口，去做你真正重要的事情
