@@ -1,6 +1,6 @@
 # Donk
 
-[English](README_EN.md) | 简体中文
+[English](README.md) | 简体中文
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 ![Go](https://img.shields.io/badge/Go-1.26+-00ADD8?logo=go&logoColor=white)
