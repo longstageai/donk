@@ -16,6 +16,7 @@ class LocaleService {
     }
   }
 
+
   /// 保存语言代码
   static Future<bool> saveLocale(String languageCode) async {
     try {
