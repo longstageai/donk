@@ -13,7 +13,6 @@ abstract class AppColors {
 
   // 主题色
   static Color primary = ColorUtil.fromHex("#1890ff");
-
   // 文字颜色
   static Color textPrimary = ColorUtil.fromHex("#262626");
   static Color textSecondary = ColorUtil.fromHex("#595959");
