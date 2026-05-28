@@ -76,7 +76,7 @@ We will consume massive amounts of tokens and record countless attempts and fail
 
 ## 🚀 Quick Start
 
-1. Download the latest version from the [Releases](https://github.com/your-username/donk/releases) page
+1. Download the latest version from the [Releases](https://github.com/longstageai/dank/releases) page
 2. Double-click to install it and complete the initial setup wizard
 3. Tell Nuclear Donkey who you are and what you want it to help you with
 4. Minimize the window and go do what actually matters
