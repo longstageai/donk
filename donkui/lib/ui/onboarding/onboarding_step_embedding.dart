@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import '../../app/conf/colors.dart';
 import '../../common/service/setting_service.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 class OnboardingStepEmbedding extends StatefulWidget {
   final VoidCallback onCompleted;
@@ -33,15 +34,16 @@ class _OnboardingStepEmbeddingState extends State<OnboardingStepEmbedding> {
       'defaultDimension': '1536',
     },
     'qwen': {
-      'label': '通义千问',
+      'label': 'Qwen',
       'defaultBaseUrl':
           'https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings',
       'defaultModel': 'text-embedding-v3',
       'defaultDimension': '1024',
     },
     'doubao': {
-      'label': '豆包',
-      'defaultBaseUrl': 'https://ark.cn-beijing.volces.com/api/v3/embeddings/multimodal',
+      'label': 'Doubao',
+      'defaultBaseUrl':
+          'https://ark.cn-beijing.volces.com/api/v3/embeddings/multimodal',
       'defaultModel': 'doubao-embedding-vision-251215',
       'defaultDimension': '2048',
     },
@@ -95,12 +97,12 @@ class _OnboardingStepEmbeddingState extends State<OnboardingStepEmbedding> {
       );
 
       if (mounted) {
-        _showToast('Embedding 配置保存成功');
+        _showToast(AppLocalizations.of(context)!.embeddingConfigSaved);
         widget.onCompleted();
       }
     } catch (e) {
       setState(() {
-        _errorMessage = '保存失败: $e';
+        _errorMessage = AppLocalizations.of(context)!.saveFailed(e);
       });
     } finally {
       setState(() {
@@ -115,6 +117,7 @@ class _OnboardingStepEmbeddingState extends State<OnboardingStepEmbedding> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isFormValid = _isFormValid();
 
     return SingleChildScrollView(
@@ -157,9 +160,9 @@ class _OnboardingStepEmbeddingState extends State<OnboardingStepEmbedding> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        '配置 Embedding',
-                        style: TextStyle(
+                      Text(
+                        l10n.configureEmbedding,
+                        style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w700,
                           color: Colors.black87,
@@ -167,7 +170,7 @@ class _OnboardingStepEmbeddingState extends State<OnboardingStepEmbedding> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        '配置向量模型，用于知识库检索与语义匹配',
+                        l10n.configureEmbeddingDesc,
                         style: TextStyle(
                           fontSize: 14,
                           height: 1.4,
@@ -240,9 +243,9 @@ class _OnboardingStepEmbeddingState extends State<OnboardingStepEmbedding> {
                       size: 20,
                     ),
                     const SizedBox(width: 8),
-                    const Text(
-                      '向量模型连接信息',
-                      style: TextStyle(
+                    Text(
+                      l10n.vectorModelConnectionInfo,
+                      style: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
                         color: Colors.black87,
@@ -251,54 +254,54 @@ class _OnboardingStepEmbeddingState extends State<OnboardingStepEmbedding> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                _buildVectorConfigWarning(),
+                _buildVectorConfigWarning(l10n),
                 const SizedBox(height: 20),
                 _buildFieldGroup(
-                  label: '提供商',
+                  label: l10n.provider,
                   required: true,
-                  description: '选择后会自动填充默认模型、完整 Base URL 和向量维度',
-                  child: _buildProviderDropdown(),
+                  description: l10n.embeddingProviderDesc,
+                  child: _buildProviderDropdown(l10n),
                 ),
                 _buildFieldGroup(
-                  label: '模型名称',
+                  label: l10n.modelName,
                   required: true,
                   child: _buildTextField(
                     controller: _modelController,
-                    hintText: '例如：text-embedding-3-small',
+                    hintText: l10n.embeddingModelNameHint,
                     prefixIcon: Icons.memory_outlined,
                     onChanged: (_) => setState(() {}),
                   ),
                 ),
                 _buildFieldGroup(
-                  label: 'API Key',
+                  label: l10n.apiKey,
                   required: true,
-                  description: '密钥仅用于服务端配置保存',
+                  description: l10n.apiKeySaveDesc,
                   child: _buildTextField(
                     controller: _apiKeyController,
-                    hintText: '输入您的 API Key',
+                    hintText: l10n.apiKeyHint,
                     prefixIcon: Icons.key_outlined,
                     obscureText: true,
                     onChanged: (_) => setState(() {}),
                   ),
                 ),
                 _buildFieldGroup(
-                  label: 'Base URL',
-                  description: '已按厂商默认填充，可按需修改',
+                  label: l10n.baseUrl,
+                  description: l10n.baseUrlDefaultDesc,
                   child: _buildTextField(
                     controller: _baseUrlController,
-                    hintText: '自定义 API 地址（可选）',
+                    hintText: l10n.customApiUrlHint,
                     prefixIcon: Icons.link_outlined,
                     onChanged: (_) => setState(() {}),
                   ),
                 ),
                 _buildFieldGroup(
-                  label: '向量维度',
+                  label: l10n.dimension,
                   required: true,
-                  description: '切换厂商会自动填充默认维度，跨厂商切换通常需要重建向量库',
+                  description: l10n.dimensionDesc,
                   bottomSpacing: 0,
                   child: _buildTextField(
                     controller: _dimensionController,
-                    hintText: '例如：1536',
+                    hintText: l10n.dimensionHint,
                     prefixIcon: Icons.straighten_outlined,
                     keyboardType: TextInputType.number,
                     onChanged: (_) => setState(() {}),
@@ -321,8 +324,8 @@ class _OnboardingStepEmbeddingState extends State<OnboardingStepEmbedding> {
               Expanded(
                 child: Text(
                   isFormValid
-                      ? '必填项已完成，可以进入下一步'
-                      : '填写提供商、模型名称、API Key 和向量维度后可继续',
+                      ? l10n.requiredFieldsComplete
+                      : l10n.embeddingRequiredFieldsHint,
                   style: TextStyle(
                     fontSize: 13,
                     color:
@@ -363,18 +366,18 @@ class _OnboardingStepEmbeddingState extends State<OnboardingStepEmbedding> {
                           ),
                         ),
                       )
-                      : const Row(
+                      : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            '下一步',
-                            style: TextStyle(
+                            l10n.nextStep,
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          SizedBox(width: 8),
-                          Icon(Icons.arrow_forward, size: 18),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.arrow_forward, size: 18),
                         ],
                       ),
             ),
@@ -385,7 +388,7 @@ class _OnboardingStepEmbeddingState extends State<OnboardingStepEmbedding> {
     );
   }
 
-  Widget _buildVectorConfigWarning() {
+  Widget _buildVectorConfigWarning(AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -408,7 +411,7 @@ class _OnboardingStepEmbeddingState extends State<OnboardingStepEmbedding> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '向量配置确认后不建议轻易更改',
+                  l10n.vectorConfigWarningTitle,
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -417,7 +420,7 @@ class _OnboardingStepEmbeddingState extends State<OnboardingStepEmbedding> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '模型、Base URL 或向量维度变更后，已有知识库向量可能不再兼容，通常需要重新生成或重建索引。',
+                  l10n.vectorConfigWarningDesc,
                   style: TextStyle(
                     fontSize: 12,
                     height: 1.4,
@@ -528,7 +531,7 @@ class _OnboardingStepEmbeddingState extends State<OnboardingStepEmbedding> {
     );
   }
 
-  Widget _buildProviderDropdown() {
+  Widget _buildProviderDropdown(AppLocalizations l10n) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey.shade50,
@@ -557,7 +560,7 @@ class _OnboardingStepEmbeddingState extends State<OnboardingStepEmbedding> {
                       ),
                       const SizedBox(width: 10),
                       Text(
-                        entry.value['label']!,
+                        _providerLabel(l10n, entry.key),
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -579,5 +582,16 @@ class _OnboardingStepEmbeddingState extends State<OnboardingStepEmbedding> {
         ),
       ),
     );
+  }
+
+  String _providerLabel(AppLocalizations l10n, String provider) {
+    switch (provider) {
+      case 'qwen':
+        return l10n.providerQwen;
+      case 'doubao':
+        return l10n.providerDoubao;
+      default:
+        return _providerConfigs[provider]?['label'] ?? provider;
+    }
   }
 }

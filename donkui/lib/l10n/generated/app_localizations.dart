@@ -1294,6 +1294,330 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'确定清空所有 Agent 协作消息吗？清空后无法恢复。'**
   String get clearAgentMessagesConfirm;
+
+  /// No description provided for @onboardingWindowTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'Donk 初始化配置'**
+  String get onboardingWindowTitle;
+
+  /// No description provided for @minimize.
+  ///
+  /// In zh, this message translates to:
+  /// **'最小化'**
+  String get minimize;
+
+  /// No description provided for @maximize.
+  ///
+  /// In zh, this message translates to:
+  /// **'最大化'**
+  String get maximize;
+
+  /// No description provided for @restore.
+  ///
+  /// In zh, this message translates to:
+  /// **'还原'**
+  String get restore;
+
+  /// No description provided for @previousStep.
+  ///
+  /// In zh, this message translates to:
+  /// **'上一步'**
+  String get previousStep;
+
+  /// No description provided for @nextStep.
+  ///
+  /// In zh, this message translates to:
+  /// **'下一步'**
+  String get nextStep;
+
+  /// No description provided for @configureLLM.
+  ///
+  /// In zh, this message translates to:
+  /// **'配置 LLM'**
+  String get configureLLM;
+
+  /// No description provided for @configureLLMDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择模型厂商并填写必要连接信息'**
+  String get configureLLMDesc;
+
+  /// No description provided for @modelConnectionInfo.
+  ///
+  /// In zh, this message translates to:
+  /// **'模型连接信息'**
+  String get modelConnectionInfo;
+
+  /// No description provided for @llmProviderDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择后会自动填充默认模型和完整 Base URL'**
+  String get llmProviderDesc;
+
+  /// No description provided for @apiKeySaveDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'密钥仅用于服务端配置保存'**
+  String get apiKeySaveDesc;
+
+  /// No description provided for @baseUrlDefaultDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'已按厂商默认填充，可按需修改'**
+  String get baseUrlDefaultDesc;
+
+  /// No description provided for @customApiUrlHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义 API 地址（可选）'**
+  String get customApiUrlHint;
+
+  /// No description provided for @requiredFieldsComplete.
+  ///
+  /// In zh, this message translates to:
+  /// **'必填项已完成，可以进入下一步'**
+  String get requiredFieldsComplete;
+
+  /// No description provided for @llmRequiredFieldsHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'填写提供商、模型名称和 API Key 后可继续'**
+  String get llmRequiredFieldsHint;
+
+  /// No description provided for @llmConfigSaved.
+  ///
+  /// In zh, this message translates to:
+  /// **'LLM 配置保存成功'**
+  String get llmConfigSaved;
+
+  /// No description provided for @saveFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存失败: {error}'**
+  String saveFailed(Object error);
+
+  /// No description provided for @providerQwen.
+  ///
+  /// In zh, this message translates to:
+  /// **'通义千问'**
+  String get providerQwen;
+
+  /// No description provided for @providerDoubao.
+  ///
+  /// In zh, this message translates to:
+  /// **'豆包'**
+  String get providerDoubao;
+
+  /// No description provided for @configureEmbedding.
+  ///
+  /// In zh, this message translates to:
+  /// **'配置 Embedding'**
+  String get configureEmbedding;
+
+  /// No description provided for @configureEmbeddingDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'配置向量模型，用于知识库检索与语义匹配'**
+  String get configureEmbeddingDesc;
+
+  /// No description provided for @vectorModelConnectionInfo.
+  ///
+  /// In zh, this message translates to:
+  /// **'向量模型连接信息'**
+  String get vectorModelConnectionInfo;
+
+  /// No description provided for @embeddingProviderDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择后会自动填充默认模型、完整 Base URL 和向量维度'**
+  String get embeddingProviderDesc;
+
+  /// No description provided for @embeddingModelNameHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'例如：text-embedding-3-small'**
+  String get embeddingModelNameHint;
+
+  /// No description provided for @dimensionDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'切换厂商会自动填充默认维度，跨厂商切换通常需要重建向量库'**
+  String get dimensionDesc;
+
+  /// No description provided for @embeddingRequiredFieldsHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'填写提供商、模型名称、API Key 和向量维度后可继续'**
+  String get embeddingRequiredFieldsHint;
+
+  /// No description provided for @vectorConfigWarningTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'向量配置确认后不建议轻易更改'**
+  String get vectorConfigWarningTitle;
+
+  /// No description provided for @vectorConfigWarningDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'模型、Base URL 或向量维度变更后，已有知识库向量可能不再兼容，通常需要重新生成或重建索引。'**
+  String get vectorConfigWarningDesc;
+
+  /// No description provided for @embeddingConfigSaved.
+  ///
+  /// In zh, this message translates to:
+  /// **'Embedding 配置保存成功'**
+  String get embeddingConfigSaved;
+
+  /// No description provided for @connectWeChat.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接微信'**
+  String get connectWeChat;
+
+  /// No description provided for @connectWeChatDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'微信登录为可选项，登录后可接收通知和使用微信消息能力'**
+  String get connectWeChatDesc;
+
+  /// No description provided for @connectionFailedWithError.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接失败: {error}'**
+  String connectionFailedWithError(Object error);
+
+  /// No description provided for @enterHome.
+  ///
+  /// In zh, this message translates to:
+  /// **'进入首页'**
+  String get enterHome;
+
+  /// No description provided for @fetchingQrCode.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在获取二维码'**
+  String get fetchingQrCode;
+
+  /// No description provided for @refreshQrCode.
+  ///
+  /// In zh, this message translates to:
+  /// **'重新获取二维码'**
+  String get refreshQrCode;
+
+  /// No description provided for @wechatOptionalHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'微信登录为可选项，你也可以稍后在设置中完成连接。'**
+  String get wechatOptionalHint;
+
+  /// No description provided for @connected.
+  ///
+  /// In zh, this message translates to:
+  /// **'已连接'**
+  String get connected;
+
+  /// No description provided for @connecting.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接中'**
+  String get connecting;
+
+  /// No description provided for @waitingForScan.
+  ///
+  /// In zh, this message translates to:
+  /// **'待扫码'**
+  String get waitingForScan;
+
+  /// No description provided for @confirming.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认中'**
+  String get confirming;
+
+  /// No description provided for @disconnected.
+  ///
+  /// In zh, this message translates to:
+  /// **'未连接'**
+  String get disconnected;
+
+  /// No description provided for @wechatLoginSuccessDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录成功，即将自动进入下一步。'**
+  String get wechatLoginSuccessDesc;
+
+  /// No description provided for @wechatFetchingQrDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在获取登录二维码，请稍候。'**
+  String get wechatFetchingQrDesc;
+
+  /// No description provided for @wechatScanConfirmDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'请使用微信扫一扫扫描二维码，并在手机上确认登录。'**
+  String get wechatScanConfirmDesc;
+
+  /// No description provided for @wechatScannedConfirmDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'已扫码，请在微信客户端确认登录。'**
+  String get wechatScannedConfirmDesc;
+
+  /// No description provided for @wechatConnectErrorDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接失败，可刷新二维码后重新扫码。'**
+  String get wechatConnectErrorDesc;
+
+  /// No description provided for @wechatDisconnectedDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击刷新二维码后，使用微信扫码完成登录。'**
+  String get wechatDisconnectedDesc;
+
+  /// No description provided for @connectionSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接成功'**
+  String get connectionSuccess;
+
+  /// No description provided for @fetchingQrCodeEllipsis.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在获取二维码...'**
+  String get fetchingQrCodeEllipsis;
+
+  /// No description provided for @clickRefreshQrCode.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击刷新获取二维码'**
+  String get clickRefreshQrCode;
+
+  /// No description provided for @scanInstructions.
+  ///
+  /// In zh, this message translates to:
+  /// **'扫码说明'**
+  String get scanInstructions;
+
+  /// No description provided for @scanInstructionOpenWeChat.
+  ///
+  /// In zh, this message translates to:
+  /// **'打开微信手机客户端'**
+  String get scanInstructionOpenWeChat;
+
+  /// No description provided for @scanInstructionTapScan.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击右上角“+”，选择“扫一扫”'**
+  String get scanInstructionTapScan;
+
+  /// No description provided for @scanInstructionConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'扫描页面中的二维码并在手机上确认登录'**
+  String get scanInstructionConfirm;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

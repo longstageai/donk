@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import '../../app/conf/colors.dart';
 import '../../common/service/setting_service.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// LLM 配置步骤
 class OnboardingStepLLM extends StatefulWidget {
@@ -40,13 +41,13 @@ class _OnboardingStepLLMState extends State<OnboardingStepLLM> {
       'defaultModel': 'deepseek-chat',
     },
     'qwen': {
-      'label': '通义千问',
+      'label': 'Qwen',
       'defaultBaseUrl':
           'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
       'defaultModel': 'qwen-turbo',
     },
     'doubao': {
-      'label': '豆包',
+      'label': 'Doubao',
       'defaultBaseUrl':
           'https://ark.cn-beijing.volces.com/api/v3/chat/completions',
       'defaultModel': 'doubao-seed-1-8-251228',
@@ -109,12 +110,12 @@ class _OnboardingStepLLMState extends State<OnboardingStepLLM> {
       );
 
       if (mounted) {
-        _showToast('LLM 配置保存成功');
+        _showToast(AppLocalizations.of(context)!.llmConfigSaved);
         widget.onCompleted();
       }
     } catch (e) {
       setState(() {
-        _errorMessage = '保存失败: $e';
+        _errorMessage = AppLocalizations.of(context)!.saveFailed(e);
       });
     } finally {
       setState(() {
@@ -130,6 +131,7 @@ class _OnboardingStepLLMState extends State<OnboardingStepLLM> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isFormValid = _isFormValid();
 
     return SingleChildScrollView(
@@ -172,9 +174,9 @@ class _OnboardingStepLLMState extends State<OnboardingStepLLM> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        '配置 LLM',
-                        style: TextStyle(
+                      Text(
+                        l10n.configureLLM,
+                        style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w700,
                           color: Colors.black87,
@@ -182,7 +184,7 @@ class _OnboardingStepLLMState extends State<OnboardingStepLLM> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        '选择模型厂商并填写必要连接信息',
+                        l10n.configureLLMDesc,
                         style: TextStyle(
                           fontSize: 14,
                           height: 1.4,
@@ -251,9 +253,9 @@ class _OnboardingStepLLMState extends State<OnboardingStepLLM> {
                   children: [
                     Icon(Icons.tune, color: AppColors.primary, size: 20),
                     const SizedBox(width: 8),
-                    const Text(
-                      '模型连接信息',
-                      style: TextStyle(
+                    Text(
+                      l10n.modelConnectionInfo,
+                      style: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
                         color: Colors.black87,
@@ -263,50 +265,50 @@ class _OnboardingStepLLMState extends State<OnboardingStepLLM> {
                 ),
                 const SizedBox(height: 20),
                 _buildFieldGroup(
-                  label: '提供商',
+                  label: l10n.provider,
                   required: true,
-                  description: '选择后会自动填充默认模型和完整 Base URL',
-                  child: _buildProviderDropdown(),
+                  description: l10n.llmProviderDesc,
+                  child: _buildProviderDropdown(l10n),
                 ),
                 _buildFieldGroup(
-                  label: '模型名称',
+                  label: l10n.modelName,
                   required: true,
                   child: _buildTextField(
                     controller: _modelController,
-                    hintText: '例如：gpt-4o-mini',
+                    hintText: l10n.modelNameHint,
                     prefixIcon: Icons.memory_outlined,
                     onChanged: (_) => setState(() {}),
                   ),
                 ),
                 _buildFieldGroup(
-                  label: 'API Key',
+                  label: l10n.apiKey,
                   required: true,
-                  description: '密钥仅用于服务端配置保存',
+                  description: l10n.apiKeySaveDesc,
                   child: _buildTextField(
                     controller: _apiKeyController,
-                    hintText: '输入您的 API Key',
+                    hintText: l10n.apiKeyHint,
                     prefixIcon: Icons.key_outlined,
                     obscureText: true,
                     onChanged: (_) => setState(() {}),
                   ),
                 ),
                 _buildFieldGroup(
-                  label: 'Base URL',
-                  description: '已按厂商默认填充，可按需修改',
+                  label: l10n.baseUrl,
+                  description: l10n.baseUrlDefaultDesc,
                   child: _buildTextField(
                     controller: _baseUrlController,
-                    hintText: '自定义 API 地址（可选）',
+                    hintText: l10n.customApiUrlHint,
                     prefixIcon: Icons.link_outlined,
                     onChanged: (_) => setState(() {}),
                   ),
                 ),
                 _buildFieldGroup(
-                  label: '每日 Token 消耗限制',
-                  description: '-1 表示不限制',
+                  label: l10n.dailyTokenLimit,
+                  description: l10n.dailyTokenLimitHint,
                   bottomSpacing: 0,
                   child: _buildTextField(
                     controller: _dailyTokenLimitController,
-                    hintText: '-1 表示不限制',
+                    hintText: l10n.dailyTokenLimitHint,
                     prefixIcon: Icons.speed_outlined,
                     keyboardType: TextInputType.number,
                     onChanged: (_) => setState(() {}),
@@ -328,7 +330,9 @@ class _OnboardingStepLLMState extends State<OnboardingStepLLM> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  isFormValid ? '必填项已完成，可以进入下一步' : '填写提供商、模型名称和 API Key 后可继续',
+                  isFormValid
+                      ? l10n.requiredFieldsComplete
+                      : l10n.llmRequiredFieldsHint,
                   style: TextStyle(
                     fontSize: 13,
                     color:
@@ -369,18 +373,18 @@ class _OnboardingStepLLMState extends State<OnboardingStepLLM> {
                           ),
                         ),
                       )
-                      : const Row(
+                      : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            '下一步',
-                            style: TextStyle(
+                            l10n.nextStep,
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          SizedBox(width: 8),
-                          Icon(Icons.arrow_forward, size: 18),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.arrow_forward, size: 18),
                         ],
                       ),
             ),
@@ -489,7 +493,7 @@ class _OnboardingStepLLMState extends State<OnboardingStepLLM> {
   }
 
   /// 构建提供商下拉选择
-  Widget _buildProviderDropdown() {
+  Widget _buildProviderDropdown(AppLocalizations l10n) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey.shade50,
@@ -518,7 +522,7 @@ class _OnboardingStepLLMState extends State<OnboardingStepLLM> {
                       ),
                       const SizedBox(width: 10),
                       Text(
-                        entry.value['label']!,
+                        _providerLabel(l10n, entry.key),
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -540,5 +544,16 @@ class _OnboardingStepLLMState extends State<OnboardingStepLLM> {
         ),
       ),
     );
+  }
+
+  String _providerLabel(AppLocalizations l10n, String provider) {
+    switch (provider) {
+      case 'qwen':
+        return l10n.providerQwen;
+      case 'doubao':
+        return l10n.providerDoubao;
+      default:
+        return _providerConfigs[provider]?['label'] ?? provider;
+    }
   }
 }

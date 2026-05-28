@@ -308,10 +308,7 @@ func promptSpec(systemPrompt string) PromptSpec {
 }
 
 func parseAgentDecision(content string) creative.AgentDecision {
-	//todo 测试
-	if true {
-		return creative.DecisionSucceeded
-	}
+
 	lower := strings.ToLower(content)
 	if strings.Contains(content, "失败") || strings.Contains(lower, "failed") || strings.Contains(lower, "failure") || strings.Contains(lower, `"decision":"failed"`) || strings.Contains(lower, `"decision": "failed"`) {
 		return creative.DecisionFailed

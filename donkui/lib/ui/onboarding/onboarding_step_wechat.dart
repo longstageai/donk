@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../app/conf/colors.dart';
 import '../../common/service/wechat_bot_service.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 class OnboardingStepWeChat extends StatefulWidget {
   final VoidCallback onCompleted;
@@ -103,7 +104,9 @@ class _OnboardingStepWeChatState extends State<OnboardingStepWeChat> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = '连接失败: $e';
+        _errorMessage = AppLocalizations.of(
+          context,
+        )!.connectionFailedWithError(e);
       });
     }
   }
@@ -117,7 +120,8 @@ class _OnboardingStepWeChatState extends State<OnboardingStepWeChat> {
 
   @override
   Widget build(BuildContext context) {
-    final statusInfo = _getStatusInfo();
+    final l10n = AppLocalizations.of(context)!;
+    final statusInfo = _getStatusInfo(l10n);
     final isConnecting = _status == WeChatConnectionStatus.connecting;
 
     return SingleChildScrollView(
@@ -160,9 +164,9 @@ class _OnboardingStepWeChatState extends State<OnboardingStepWeChat> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        '连接微信',
-                        style: TextStyle(
+                      Text(
+                        l10n.connectWeChat,
+                        style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w700,
                           color: Colors.black87,
@@ -170,7 +174,7 @@ class _OnboardingStepWeChatState extends State<OnboardingStepWeChat> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        '微信登录为可选项，登录后可接收通知和使用微信消息能力',
+                        l10n.connectWeChatDesc,
                         style: TextStyle(
                           fontSize: 14,
                           height: 1.4,
@@ -272,7 +276,7 @@ class _OnboardingStepWeChatState extends State<OnboardingStepWeChat> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                _buildQRCodeOrStatus(),
+                _buildQRCodeOrStatus(l10n),
                 const SizedBox(height: 18),
                 Text(
                   statusInfo.description,
@@ -288,17 +292,17 @@ class _OnboardingStepWeChatState extends State<OnboardingStepWeChat> {
           ),
           const SizedBox(height: 18),
 
-          _buildInstructions(),
+          _buildInstructions(l10n),
           const SizedBox(height: 18),
 
-          _buildActionButtons(isConnecting),
+          _buildActionButtons(l10n, isConnecting),
           const SizedBox(height: 24),
         ],
       ),
     );
   }
 
-  Widget _buildActionButtons(bool isConnecting) {
+  Widget _buildActionButtons(AppLocalizations l10n, bool isConnecting) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -321,15 +325,18 @@ class _OnboardingStepWeChatState extends State<OnboardingStepWeChat> {
               padding: const EdgeInsets.symmetric(vertical: 16),
               elevation: 0,
             ),
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  '进入首页',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  l10n.enterHome,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-                SizedBox(width: 8),
-                Icon(Icons.arrow_forward_rounded, size: 20),
+                const SizedBox(width: 8),
+                const Icon(Icons.arrow_forward_rounded, size: 20),
               ],
             ),
           ),
@@ -358,23 +365,23 @@ class _OnboardingStepWeChatState extends State<OnboardingStepWeChat> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Text(
-                          '正在获取二维码',
-                          style: TextStyle(
+                        Text(
+                          l10n.fetchingQrCode,
+                          style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
                     )
-                    : const Row(
+                    : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.refresh_rounded, size: 18),
-                        SizedBox(width: 6),
+                        const Icon(Icons.refresh_rounded, size: 18),
+                        const SizedBox(width: 6),
                         Text(
-                          '重新获取二维码',
-                          style: TextStyle(
+                          l10n.refreshQrCode,
+                          style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -384,7 +391,7 @@ class _OnboardingStepWeChatState extends State<OnboardingStepWeChat> {
           ),
           const SizedBox(height: 4),
           Text(
-            '微信登录为可选项，你也可以稍后在设置中完成连接。',
+            l10n.wechatOptionalHint,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 12,
@@ -397,60 +404,60 @@ class _OnboardingStepWeChatState extends State<OnboardingStepWeChat> {
     );
   }
 
-  _WeChatStatusInfo _getStatusInfo() {
+  _WeChatStatusInfo _getStatusInfo(AppLocalizations l10n) {
     switch (_status) {
       case WeChatConnectionStatus.connected:
         return _WeChatStatusInfo(
-          title: '微信已连接',
-          badge: '已连接',
-          description: '登录成功，即将自动进入下一步。',
+          title: l10n.wechatConnected,
+          badge: l10n.connected,
+          description: l10n.wechatLoginSuccessDesc,
           color: Colors.green.shade600,
           icon: Icons.check_circle_outline,
         );
       case WeChatConnectionStatus.connecting:
         return _WeChatStatusInfo(
-          title: '正在连接微信',
-          badge: '连接中',
-          description: '正在获取登录二维码，请稍候。',
+          title: l10n.wechatConnecting,
+          badge: l10n.connecting,
+          description: l10n.wechatFetchingQrDesc,
           color: AppColors.primary,
           icon: Icons.sync,
         );
       case WeChatConnectionStatus.waitingForScan:
         return _WeChatStatusInfo(
-          title: '等待扫码登录',
-          badge: '待扫码',
-          description: '请使用微信扫一扫扫描二维码，并在手机上确认登录。',
+          title: l10n.wechatWaitScan,
+          badge: l10n.waitingForScan,
+          description: l10n.wechatScanConfirmDesc,
           color: Colors.orange.shade700,
           icon: Icons.qr_code_scanner,
         );
       case WeChatConnectionStatus.scanning:
         return _WeChatStatusInfo(
-          title: '扫码成功',
-          badge: '确认中',
-          description: '已扫码，请在微信客户端确认登录。',
+          title: l10n.wechatScanSuccess,
+          badge: l10n.confirming,
+          description: l10n.wechatScannedConfirmDesc,
           color: Colors.blue.shade600,
           icon: Icons.phonelink,
         );
       case WeChatConnectionStatus.error:
         return _WeChatStatusInfo(
-          title: '连接出现错误',
-          badge: '错误',
-          description: '连接失败，可刷新二维码后重新扫码。',
+          title: l10n.wechatConnectError,
+          badge: l10n.error,
+          description: l10n.wechatConnectErrorDesc,
           color: Colors.red.shade600,
           icon: Icons.error_outline,
         );
       case WeChatConnectionStatus.disconnected:
         return _WeChatStatusInfo(
-          title: '微信未连接',
-          badge: '未连接',
-          description: '点击刷新二维码后，使用微信扫码完成登录。',
+          title: l10n.wechatDisconnected,
+          badge: l10n.disconnected,
+          description: l10n.wechatDisconnectedDesc,
           color: Colors.grey.shade600,
           icon: Icons.link_off,
         );
     }
   }
 
-  Widget _buildQRCodeOrStatus() {
+  Widget _buildQRCodeOrStatus(AppLocalizations l10n) {
     if (_status == WeChatConnectionStatus.connected) {
       return Container(
         width: 220,
@@ -470,7 +477,7 @@ class _OnboardingStepWeChatState extends State<OnboardingStepWeChat> {
             ),
             const SizedBox(height: 14),
             Text(
-              '连接成功',
+              l10n.connectionSuccess,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -537,7 +544,9 @@ class _OnboardingStepWeChatState extends State<OnboardingStepWeChat> {
             Icon(Icons.qr_code_2_rounded, size: 58, color: AppColors.textHint),
           const SizedBox(height: 14),
           Text(
-            isConnecting ? '正在获取二维码...' : '点击刷新获取二维码',
+            isConnecting
+                ? l10n.fetchingQrCodeEllipsis
+                : l10n.clickRefreshQrCode,
             style: TextStyle(
               fontSize: 14,
               color: AppColors.textSecondary,
@@ -549,7 +558,7 @@ class _OnboardingStepWeChatState extends State<OnboardingStepWeChat> {
     );
   }
 
-  Widget _buildInstructions() {
+  Widget _buildInstructions(AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -566,7 +575,7 @@ class _OnboardingStepWeChatState extends State<OnboardingStepWeChat> {
               Icon(Icons.info_outline, size: 18, color: Colors.blue.shade600),
               const SizedBox(width: 8),
               Text(
-                '扫码说明',
+                l10n.scanInstructions,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -576,11 +585,11 @@ class _OnboardingStepWeChatState extends State<OnboardingStepWeChat> {
             ],
           ),
           const SizedBox(height: 12),
-          _buildInstructionItem('1', '打开微信手机客户端'),
+          _buildInstructionItem('1', l10n.scanInstructionOpenWeChat),
           const SizedBox(height: 8),
-          _buildInstructionItem('2', '点击右上角“+”，选择“扫一扫”'),
+          _buildInstructionItem('2', l10n.scanInstructionTapScan),
           const SizedBox(height: 8),
-          _buildInstructionItem('3', '扫描页面中的二维码并在手机上确认登录'),
+          _buildInstructionItem('3', l10n.scanInstructionConfirm),
         ],
       ),
     );

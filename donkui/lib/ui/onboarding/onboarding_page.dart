@@ -4,6 +4,7 @@ import 'package:window_manager/window_manager.dart';
 import '../../app/conf/colors.dart';
 import '../../app/router/routes.dart';
 import '../../common/service/onboarding_state_service.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'onboarding_step_llm.dart';
 import 'onboarding_step_embedding.dart';
 import 'onboarding_step_wechat.dart';
@@ -22,9 +23,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
   int _currentStep = 0;
   bool _isMaximized = false;
 
-  /// 步骤标题
-  final List<String> _stepTitles = ['配置 LLM', '配置 Embedding', '微信登录'];
-
   @override
   void initState() {
     super.initState();
@@ -40,7 +38,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   /// 进入下一步
   void _nextStep() {
-    if (_currentStep < _stepTitles.length - 1) {
+    if (_currentStep < 2) {
       setState(() {
         _currentStep++;
       });
@@ -90,6 +88,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   Widget _buildWindowBar() {
+    final l10n = AppLocalizations.of(context)!;
+
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onPanStart: (_) => windowManager.startDragging(),
@@ -103,7 +103,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
         child: Row(
           children: [
             Text(
-              'Donk 初始化配置',
+              l10n.onboardingWindowTitle,
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
@@ -113,12 +113,12 @@ class _OnboardingPageState extends State<OnboardingPage> {
             const Spacer(),
             _buildWindowButton(
               icon: Icons.remove,
-              tooltip: '最小化',
+              tooltip: l10n.minimize,
               onPressed: windowManager.minimize,
             ),
             _buildWindowButton(
               icon: _isMaximized ? Icons.filter_none : Icons.crop_square,
-              tooltip: _isMaximized ? '还原' : '最大化',
+              tooltip: _isMaximized ? l10n.restore : l10n.maximize,
               onPressed: () async {
                 if (await windowManager.isMaximized()) {
                   await windowManager.unmaximize();
@@ -130,7 +130,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
             ),
             _buildWindowButton(
               icon: Icons.close,
-              tooltip: '关闭',
+              tooltip: l10n.close,
               isClose: true,
               onPressed: windowManager.close,
             ),
@@ -169,7 +169,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       child: Column(
         children: [
           Row(
-            children: List.generate(_stepTitles.length * 2 - 1, (index) {
+            children: List.generate(5, (index) {
               if (index.isOdd) {
                 // 连接线
                 final stepIndex = index ~/ 2;
@@ -233,6 +233,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   /// 构建底部按钮
   Widget _buildBottomButtons() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       padding: const EdgeInsets.all(24),
       child: Row(
@@ -247,7 +249,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   });
                 },
                 child: Text(
-                  '上一步',
+                  l10n.previousStep,
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 14,

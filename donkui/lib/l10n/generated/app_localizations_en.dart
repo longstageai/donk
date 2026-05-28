@@ -639,4 +639,170 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get clearAgentMessagesConfirm => 'Clear all Agent collaboration messages? This action cannot be undone.';
+
+  @override
+  String get onboardingWindowTitle => 'Donk Initial Setup';
+
+  @override
+  String get minimize => 'Minimize';
+
+  @override
+  String get maximize => 'Maximize';
+
+  @override
+  String get restore => 'Restore';
+
+  @override
+  String get previousStep => 'Previous';
+
+  @override
+  String get nextStep => 'Next';
+
+  @override
+  String get configureLLM => 'Configure LLM';
+
+  @override
+  String get configureLLMDesc => 'Select a model provider and enter the required connection information';
+
+  @override
+  String get modelConnectionInfo => 'Model Connection Information';
+
+  @override
+  String get llmProviderDesc => 'Selecting a provider automatically fills the default model and full Base URL';
+
+  @override
+  String get apiKeySaveDesc => 'The key is only used for server-side configuration storage';
+
+  @override
+  String get baseUrlDefaultDesc => 'Filled with the provider default. You can change it if needed';
+
+  @override
+  String get customApiUrlHint => 'Custom API address (optional)';
+
+  @override
+  String get requiredFieldsComplete => 'Required fields are complete. You can continue to the next step';
+
+  @override
+  String get llmRequiredFieldsHint => 'Enter provider, model name, and API Key to continue';
+
+  @override
+  String get llmConfigSaved => 'LLM configuration saved';
+
+  @override
+  String saveFailed(Object error) {
+    return 'Save failed: $error';
+  }
+
+  @override
+  String get providerQwen => 'Qwen';
+
+  @override
+  String get providerDoubao => 'Doubao';
+
+  @override
+  String get configureEmbedding => 'Configure Embedding';
+
+  @override
+  String get configureEmbeddingDesc => 'Configure the vector model for knowledge-base retrieval and semantic matching';
+
+  @override
+  String get vectorModelConnectionInfo => 'Vector Model Connection Information';
+
+  @override
+  String get embeddingProviderDesc => 'Selecting a provider automatically fills the default model, full Base URL, and vector dimension';
+
+  @override
+  String get embeddingModelNameHint => 'e.g., text-embedding-3-small';
+
+  @override
+  String get dimensionDesc => 'Switching providers fills the default dimension automatically. Switching across providers usually requires rebuilding the vector database';
+
+  @override
+  String get embeddingRequiredFieldsHint => 'Enter provider, model name, API Key, and vector dimension to continue';
+
+  @override
+  String get vectorConfigWarningTitle => 'Do not change vector configuration lightly after confirmation';
+
+  @override
+  String get vectorConfigWarningDesc => 'After the model, Base URL, or vector dimension changes, existing knowledge-base vectors may no longer be compatible and usually need to be regenerated or re-indexed.';
+
+  @override
+  String get embeddingConfigSaved => 'Embedding configuration saved';
+
+  @override
+  String get connectWeChat => 'Connect WeChat';
+
+  @override
+  String get connectWeChatDesc => 'WeChat login is optional. After login, you can receive notifications and use WeChat messaging capabilities';
+
+  @override
+  String connectionFailedWithError(Object error) {
+    return 'Connection failed: $error';
+  }
+
+  @override
+  String get enterHome => 'Enter Home';
+
+  @override
+  String get fetchingQrCode => 'Fetching QR code';
+
+  @override
+  String get refreshQrCode => 'Refresh QR code';
+
+  @override
+  String get wechatOptionalHint => 'WeChat login is optional. You can also connect it later in Settings.';
+
+  @override
+  String get connected => 'Connected';
+
+  @override
+  String get connecting => 'Connecting';
+
+  @override
+  String get waitingForScan => 'Waiting';
+
+  @override
+  String get confirming => 'Confirming';
+
+  @override
+  String get disconnected => 'Disconnected';
+
+  @override
+  String get wechatLoginSuccessDesc => 'Login succeeded. Entering the next step automatically.';
+
+  @override
+  String get wechatFetchingQrDesc => 'Fetching the login QR code. Please wait.';
+
+  @override
+  String get wechatScanConfirmDesc => 'Use WeChat to scan the QR code and confirm login on your phone.';
+
+  @override
+  String get wechatScannedConfirmDesc => 'Scanned. Please confirm login in WeChat.';
+
+  @override
+  String get wechatConnectErrorDesc => 'Connection failed. Refresh the QR code and scan again.';
+
+  @override
+  String get wechatDisconnectedDesc => 'Click refresh QR code, then scan with WeChat to log in.';
+
+  @override
+  String get connectionSuccess => 'Connected successfully';
+
+  @override
+  String get fetchingQrCodeEllipsis => 'Fetching QR code...';
+
+  @override
+  String get clickRefreshQrCode => 'Click refresh to get a QR code';
+
+  @override
+  String get scanInstructions => 'Scan Instructions';
+
+  @override
+  String get scanInstructionOpenWeChat => 'Open the WeChat mobile app';
+
+  @override
+  String get scanInstructionTapScan => 'Tap \"+\" in the upper-right corner and choose \"Scan\"';
+
+  @override
+  String get scanInstructionConfirm => 'Scan the QR code on this page and confirm login on your phone';
 }

@@ -639,4 +639,170 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get clearAgentMessagesConfirm => '确定清空所有 Agent 协作消息吗？清空后无法恢复。';
+
+  @override
+  String get onboardingWindowTitle => 'Donk 初始化配置';
+
+  @override
+  String get minimize => '最小化';
+
+  @override
+  String get maximize => '最大化';
+
+  @override
+  String get restore => '还原';
+
+  @override
+  String get previousStep => '上一步';
+
+  @override
+  String get nextStep => '下一步';
+
+  @override
+  String get configureLLM => '配置 LLM';
+
+  @override
+  String get configureLLMDesc => '选择模型厂商并填写必要连接信息';
+
+  @override
+  String get modelConnectionInfo => '模型连接信息';
+
+  @override
+  String get llmProviderDesc => '选择后会自动填充默认模型和完整 Base URL';
+
+  @override
+  String get apiKeySaveDesc => '密钥仅用于服务端配置保存';
+
+  @override
+  String get baseUrlDefaultDesc => '已按厂商默认填充，可按需修改';
+
+  @override
+  String get customApiUrlHint => '自定义 API 地址（可选）';
+
+  @override
+  String get requiredFieldsComplete => '必填项已完成，可以进入下一步';
+
+  @override
+  String get llmRequiredFieldsHint => '填写提供商、模型名称和 API Key 后可继续';
+
+  @override
+  String get llmConfigSaved => 'LLM 配置保存成功';
+
+  @override
+  String saveFailed(Object error) {
+    return '保存失败: $error';
+  }
+
+  @override
+  String get providerQwen => '通义千问';
+
+  @override
+  String get providerDoubao => '豆包';
+
+  @override
+  String get configureEmbedding => '配置 Embedding';
+
+  @override
+  String get configureEmbeddingDesc => '配置向量模型，用于知识库检索与语义匹配';
+
+  @override
+  String get vectorModelConnectionInfo => '向量模型连接信息';
+
+  @override
+  String get embeddingProviderDesc => '选择后会自动填充默认模型、完整 Base URL 和向量维度';
+
+  @override
+  String get embeddingModelNameHint => '例如：text-embedding-3-small';
+
+  @override
+  String get dimensionDesc => '切换厂商会自动填充默认维度，跨厂商切换通常需要重建向量库';
+
+  @override
+  String get embeddingRequiredFieldsHint => '填写提供商、模型名称、API Key 和向量维度后可继续';
+
+  @override
+  String get vectorConfigWarningTitle => '向量配置确认后不建议轻易更改';
+
+  @override
+  String get vectorConfigWarningDesc => '模型、Base URL 或向量维度变更后，已有知识库向量可能不再兼容，通常需要重新生成或重建索引。';
+
+  @override
+  String get embeddingConfigSaved => 'Embedding 配置保存成功';
+
+  @override
+  String get connectWeChat => '连接微信';
+
+  @override
+  String get connectWeChatDesc => '微信登录为可选项，登录后可接收通知和使用微信消息能力';
+
+  @override
+  String connectionFailedWithError(Object error) {
+    return '连接失败: $error';
+  }
+
+  @override
+  String get enterHome => '进入首页';
+
+  @override
+  String get fetchingQrCode => '正在获取二维码';
+
+  @override
+  String get refreshQrCode => '重新获取二维码';
+
+  @override
+  String get wechatOptionalHint => '微信登录为可选项，你也可以稍后在设置中完成连接。';
+
+  @override
+  String get connected => '已连接';
+
+  @override
+  String get connecting => '连接中';
+
+  @override
+  String get waitingForScan => '待扫码';
+
+  @override
+  String get confirming => '确认中';
+
+  @override
+  String get disconnected => '未连接';
+
+  @override
+  String get wechatLoginSuccessDesc => '登录成功，即将自动进入下一步。';
+
+  @override
+  String get wechatFetchingQrDesc => '正在获取登录二维码，请稍候。';
+
+  @override
+  String get wechatScanConfirmDesc => '请使用微信扫一扫扫描二维码，并在手机上确认登录。';
+
+  @override
+  String get wechatScannedConfirmDesc => '已扫码，请在微信客户端确认登录。';
+
+  @override
+  String get wechatConnectErrorDesc => '连接失败，可刷新二维码后重新扫码。';
+
+  @override
+  String get wechatDisconnectedDesc => '点击刷新二维码后，使用微信扫码完成登录。';
+
+  @override
+  String get connectionSuccess => '连接成功';
+
+  @override
+  String get fetchingQrCodeEllipsis => '正在获取二维码...';
+
+  @override
+  String get clickRefreshQrCode => '点击刷新获取二维码';
+
+  @override
+  String get scanInstructions => '扫码说明';
+
+  @override
+  String get scanInstructionOpenWeChat => '打开微信手机客户端';
+
+  @override
+  String get scanInstructionTapScan => '点击右上角“+”，选择“扫一扫”';
+
+  @override
+  String get scanInstructionConfirm => '扫描页面中的二维码并在手机上确认登录';
 }
