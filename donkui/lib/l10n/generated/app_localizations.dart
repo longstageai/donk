@@ -1208,7 +1208,7 @@ abstract class AppLocalizations {
   /// No description provided for @agentCollaboration.
   ///
   /// In zh, this message translates to:
-  /// **'Agent 协作'**
+  /// **'Donk 协作'**
   String get agentCollaboration;
 
   /// No description provided for @agentActivityStatus.
@@ -1232,13 +1232,13 @@ abstract class AppLocalizations {
   /// No description provided for @noAgentMessages.
   ///
   /// In zh, this message translates to:
-  /// **'暂无 Agent 消息'**
+  /// **'暂无 Donk 消息'**
   String get noAgentMessages;
 
   /// No description provided for @agentActivityHint.
   ///
   /// In zh, this message translates to:
-  /// **'Agent 协作动态会实时显示在这里'**
+  /// **'Donk 协作动态会实时显示在这里'**
   String get agentActivityHint;
 
   /// No description provided for @latestMessage.
@@ -1292,7 +1292,7 @@ abstract class AppLocalizations {
   /// No description provided for @clearAgentMessagesConfirm.
   ///
   /// In zh, this message translates to:
-  /// **'确定清空所有 Agent 协作消息吗？清空后无法恢复。'**
+  /// **'确定清空所有 Donk 协作消息吗？清空后无法恢复。'**
   String get clearAgentMessagesConfirm;
 
   /// No description provided for @onboardingWindowTitle.

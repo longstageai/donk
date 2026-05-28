@@ -55,7 +55,7 @@ class App extends StatefulWidget {
     await Routes.initInitialLocation();
     await wm();
     // 启动外部服务器程序
-    await ProcessManagerService.startServer();
+    // await ProcessManagerService.startServer();
     // 初始化依赖注入
     _initDependencies();
     // 检查微信登录状态，如有凭证则自动连接

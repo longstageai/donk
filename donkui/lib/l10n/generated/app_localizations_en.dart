@@ -588,7 +588,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectFileFailed => 'Failed to select file';
 
   @override
-  String get agentCollaboration => 'Agent Collaboration';
+  String get agentCollaboration => 'Donk Collaboration';
 
   @override
   String agentActivityStatus(Object count) {
@@ -602,10 +602,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get realtimeDisconnected => 'Live connection disconnected';
 
   @override
-  String get noAgentMessages => 'No Agent Messages';
+  String get noAgentMessages => 'No Donk Messages';
 
   @override
-  String get agentActivityHint => 'Agent collaboration updates will appear here in real time';
+  String get agentActivityHint => 'Donk collaboration updates will appear here in real time';
 
   @override
   String get latestMessage => 'Latest';
@@ -638,7 +638,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get clearAgentMessagesConfirm => 'Clear all Agent collaboration messages? This action cannot be undone.';
+  String get clearAgentMessagesConfirm => 'Clear all Donk collaboration messages? This action cannot be undone.';
 
   @override
   String get onboardingWindowTitle => 'Donk Initial Setup';

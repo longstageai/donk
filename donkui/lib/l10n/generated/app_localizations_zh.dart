@@ -588,7 +588,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get selectFileFailed => '选择文件失败';
 
   @override
-  String get agentCollaboration => 'Agent 协作';
+  String get agentCollaboration => 'Donk 协作';
 
   @override
   String agentActivityStatus(Object count) {
@@ -602,10 +602,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get realtimeDisconnected => '实时连接已断开';
 
   @override
-  String get noAgentMessages => '暂无 Agent 消息';
+  String get noAgentMessages => '暂无 Donk 消息';
 
   @override
-  String get agentActivityHint => 'Agent 协作动态会实时显示在这里';
+  String get agentActivityHint => 'Donk 协作动态会实时显示在这里';
 
   @override
   String get latestMessage => '最新消息';
@@ -638,7 +638,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get clearAgentMessagesConfirm => '确定清空所有 Agent 协作消息吗？清空后无法恢复。';
+  String get clearAgentMessagesConfirm => '确定清空所有 Donk 协作消息吗？清空后无法恢复。';
 
   @override
   String get onboardingWindowTitle => 'Donk 初始化配置';
