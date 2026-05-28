@@ -60,10 +60,16 @@ func NewGoalCreativeAgent(llm CreativeLLMClient, deps *GoalCreativeAgentDeps) cr
 		tools.Register(builtin.NewTaskManager(deps.Scheduler))
 	}
 
-	// 构建动态系统提示词，包含用户画像和对话历史
-	systemPrompt := buildGoalCreativePrompt(deps)
+	// 使用动态提示词构建器，每次对话时重新构建系统提示词
+	promptBuilder := func(input creative.AgentInput) PromptSpec {
+		systemPrompt := buildGoalCreativePrompt(deps)
+		return prompt(systemPrompt)
+	}
 
-	return NewLLMAgent("goal_creative", "目标创意 Agent", creative.RoleGoalCreative, []creative.EventType{creative.EventGoalRequested, creative.EventGoalRegenerationRequested, creative.EventGoalRefinementRequested}, promptSpec(systemPrompt), llm, goalCreativeOutput, WithTools(tools), WithHistoryStore(getHistoryStore(deps)), WithProfile(getProfile(deps)))
+	// 构建动态系统提示词，包含用户画像和对话历史
+	//systemPrompt := buildGoalCreativePrompt(deps)
+	//return NewLLMAgent("goal_creative", "目标创意 Agent", creative.RoleGoalCreative, []creative.EventType{creative.EventGoalRequested, creative.EventGoalRegenerationRequested, creative.EventGoalRefinementRequested}, promptSpec(systemPrompt), llm, goalCreativeOutput, WithTools(tools), WithHistoryStore(getHistoryStore(deps)), WithProfile(getProfile(deps)))
+	return NewLLMAgentWithDynamicPrompt("goal_creative", "目标创意 Agent", creative.RoleGoalCreative, []creative.EventType{creative.EventGoalRequested, creative.EventGoalRegenerationRequested, creative.EventGoalRefinementRequested}, promptBuilder, llm, goalCreativeOutput, WithTools(tools), WithHistoryStore(getHistoryStore(deps)), WithProfile(getProfile(deps)))
 }
 
 // getHistoryStore 安全获取 HistoryStore
@@ -107,6 +113,10 @@ func buildGoalCreativePrompt(deps *GoalCreativeAgentDeps) string {
 	}
 
 	return strings.Join(parts, "\n")
+}
+
+func prompt(systemPrompt string) PromptSpec {
+	return PromptSpec{SystemPrompt: systemPrompt, OutputFormat: "请严格按系统提示词中的输出格式回答。评审类 Agent 必须明确写出 判定结果：通过 或 判定结果：不通过，并给出原因。"}
 }
 
 // formatProfileInfo 格式化用户画像信息
