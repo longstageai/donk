@@ -19,6 +19,9 @@ abstract class AppColors {
   static Color textSecondary = ColorUtil.fromHex("#595959");
   static Color textHint = ColorUtil.fromHex("#bfbfbf");
 
+
+
+
   // 分割线颜色
   static Color divider = ColorUtil.fromHex("#e8e8e8");
 }
